@@ -12,13 +12,6 @@ error_inc=0
 	This is the main code skeleton for modular synthesizer using emulation of local electric systems.
 """
 
-
-def error(func):
-	def do(*arg,**kwarg):
-		print("Error "+error_inc+" occured with falling state ")
-		error_inc+=1
-
-
 #################################
 ########### from net ############
 #################################
