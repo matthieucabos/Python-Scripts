@@ -1,6 +1,9 @@
 # Python
 A Reportery containing various utility python scripts
 
+Author  : CABOS Matthieu
+Release : 16/12/2019
+
 You can find three sub repertories containing respectively :
   * Find and replace algorithm to write and replace parts of code in a full developpement-project 
   * A Maths library containing redefined library : complex arithmetic, equation resolution, a first look of my matrix lib, a 3D vectorial lib and various utility scripts to finish/adapt to your work.
