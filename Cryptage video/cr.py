@@ -1,0 +1,68 @@
+from cmatrix import *
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+from PIL import Image
+import numpy as np
+
+
+imgPIL=Image.open("zolie.png")
+img=np.array(imgPIL)
+test=[]
+size_r=img.shape[0]
+size_c=img.shape[1]
+if(size_r>size_c):
+	init_r=size_r
+	init_c=size_r
+else:
+	init_r=size_c
+	init_c=size_c
+img2=np.zeros((init_r,init_c,4), dtype=np.uint8)
+
+mRed=Matrix(init_r,init_c)
+mBlue=Matrix(init_r,init_c)
+mGreen=Matrix(init_r,init_c)
+mAlpha=Matrix(init_r,init_c)
+for i in range(size_r):
+	for j in range(size_c):
+		try:
+			mRed[i,j]=float(img[i,j][0])
+			mBlue[i,j]=float(img[i,j][1])
+			mGreen[i,j]=float(img[i,j][2])
+			mAlpha[i,j]=float(img[i,j][3])
+		except:
+			mRed[i,j]=float(0)
+			mBlue[i,j]=float(0)
+			mGreen[i,j]=float(0)
+			mAlpha[i,j]=float(0)
+
+LR,UR=mRed.LU()
+LB,UB=mBlue.LU()
+LG,UG=mGreen.LU()
+LA,UA=mAlpha.LU()
+
+CR_R=LR+UR   # Crypted image data as RGB+Alpha Matrix
+CR_B=LB+UB
+CR_G=LG+UG
+CR_A=LA+UA
+
+DeCrR=CR_R.triangle(1)*CR_R.triangle(0)
+DeCrB=CR_B.triangle(1)*CR_B.triangle(0)
+DeCrG=CR_G.triangle(1)*CR_G.triangle(0)
+DeCrA=CR_A.triangle(1)*CR_A.triangle(0)
+
+for i in range(init_r):
+	for j in range(init_c):
+		img2[i,j]=np.array(int(DeCrR[i,j]),int(DeCrB[i,j]),int(DeCrG[i,j]),int(DeCr[i,j]))
+		crypted[i,j]=np.array(int(CR_R[i,j]),int(CR_B[i,j]),int(CR_G[i,j]),int(CR_A[i,j]))
+
+plt.imshow(img)
+plt.show()
+
+plt.imshow(crypted)
+plt.show()
+
+plt.imshow(img2)
+plt.show()
+
+print(mRed.size_r())
+print(mRed.size_c())
