@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 
-__author__"CABOS Matthieu"
+__author__="CABOS Matthieu"
 __date__=21_07_2020
 
 imgPIL=Image.open("zolie.png")
