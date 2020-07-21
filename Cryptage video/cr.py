@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 
+__author__"CABOS Matthieu"
+__date__=21_07_2020
 
 imgPIL=Image.open("zolie.png")
 img=np.array(imgPIL)
@@ -16,12 +18,14 @@ if(size_r>size_c):
 else:
 	init_r=size_c
 	init_c=size_c
+
 img2=np.zeros((init_r,init_c,4), dtype=np.uint8)
 
 mRed=Matrix(init_r,init_c)
 mBlue=Matrix(init_r,init_c)
 mGreen=Matrix(init_r,init_c)
 mAlpha=Matrix(init_r,init_c)
+
 for i in range(size_r):
 	for j in range(size_c):
 		try:
@@ -34,6 +38,7 @@ for i in range(size_r):
 			mBlue[i,j]=float(0)
 			mGreen[i,j]=float(0)
 			mAlpha[i,j]=float(0)
+
 
 LR,UR=mRed.LU()
 LB,UB=mBlue.LU()
@@ -63,6 +68,3 @@ plt.show()
 
 plt.imshow(img2)
 plt.show()
-
-print(mRed.size_r())
-print(mRed.size_c())
