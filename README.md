@@ -4,7 +4,7 @@ A Reportery containing various utility python scripts
  # Author  : CABOS Matthieu
  # Release : WIP
 
-You can find six sub repertories containing respectively :
+You can find five sub repertories containing respectively :
   * Picture, data, signals 
 and Video Crypter algorithms Using The cmatrix Library
   * Find and replace algorithm to write and replace parts of code in a full developpement-project 
