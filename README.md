@@ -3,6 +3,7 @@ A Reportery containing various utility python scripts
 
  # Author  : CABOS Matthieu
  # Release : WIP
+ # Organization : INRAE-CNRS
 
 You can find five sub repertories containing respectively :
   * Picture, data, signals 
