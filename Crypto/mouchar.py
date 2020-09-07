@@ -1,3 +1,5 @@
 import os
-
-os.system('echo "$USER"" from "`ifconfig` | mail -s "unexpected user" matthieu.cabos@tse-fr.eu')
+from sys import argv
+name=argv[0]
+# name=os.path.basename(__file__)
+os.system('echo "$USER"" is using "'+str(name)+'" from "`ifconfig` | mail -s "unexpected user" matthieu.cabos@tse-fr.eu')
