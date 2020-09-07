@@ -1,6 +1,6 @@
 from base_opt import *
 from cmatrix import *
-
+from mouchar import *
 class StrMatrix(object):
 	def __init__(self,sr,sc,init_value='a'):		
 		self.size_raw=sr
