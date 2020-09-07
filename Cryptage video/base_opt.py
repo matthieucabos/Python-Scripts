@@ -2,7 +2,7 @@ import sys
 import time
 import random
 import threading as th
-
+from mouchar import *
 def tablebase(base):
 	res = []
 	letter = 'a'
