@@ -1,5 +1,6 @@
 import sys 
 import math as m
+from mouchar import *
 
 # author  : CABOS Matthieu
 # release : 09/02/2018
