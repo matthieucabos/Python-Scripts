@@ -3,6 +3,7 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
+from mouchar import *
 
 __author__="CABOS Matthieu"
 __date__=21_07_2020
