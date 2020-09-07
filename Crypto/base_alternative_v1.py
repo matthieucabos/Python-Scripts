@@ -1,6 +1,6 @@
 from base_opt import *
 import random as r
-
+from mouchar import *
 #Author : CABOS Matthieu
 #Date : 02/2020
 
