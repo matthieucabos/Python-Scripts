@@ -1,4 +1,5 @@
 import sys 
+from mouchar import *
 #Author : CABOS Matthieu
 #Date : 01/2018
 def reverse(s):
