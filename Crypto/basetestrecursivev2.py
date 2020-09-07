@@ -1,5 +1,6 @@
 import sys 
 import math as m
+from mouchar import *
 
 # low resolution cryptographic protocol
 # author  : CABOS Matthieu
