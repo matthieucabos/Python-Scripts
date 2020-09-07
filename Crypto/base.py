@@ -1,5 +1,5 @@
 import sys 
-
+from mouchar import *
 def reverse(s):
 	str= ""
 	for i in s:
