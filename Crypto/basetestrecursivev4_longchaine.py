@@ -1,6 +1,7 @@
 import sys 
 import math as m
 import random as r
+from mouchar import *
 # codes from math:
 # sqrt
 # cos
