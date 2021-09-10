@@ -3,7 +3,7 @@ A Reportery containing various utility python scripts
 
  # Author  : CABOS Matthieu
  # Release : WIP
- # Organization : INRAE-CNRS
+ # Organization : CNRS
 
 You can find five sub repertories containing respectively :
   * Picture, data, signals 
@@ -13,6 +13,7 @@ and Video Crypter algorithms Using The cmatrix Library
   * My Work In Progress repertory containing an hybryd data structure called SkipTree, an unfinished json parser and various basics functions.
   * The fastest Sorting Algorithm (Shell sort)
   * A Unitary function tester as decorator
+  * An ods table sorter
   
 At the end you can find my audio tools library (to finish) free to use. The famous french song "Frère Jacques" is fully coded as an example.
 
