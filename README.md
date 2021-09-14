@@ -14,6 +14,7 @@ and Video Crypter algorithms Using The cmatrix Library
   * The fastest Sorting Algorithm (Shell sort)
   * A Unitary function tester as decorator
   * An ods table sorter
+  * ods2dhcp server updater
   
 At the end you can find my audio tools library (to finish) free to use. The famous french song "Frère Jacques" is fully coded as an example.
 
