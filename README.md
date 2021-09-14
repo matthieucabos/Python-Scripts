@@ -18,4 +18,4 @@ and Video Crypter algorithms Using The cmatrix Library
   
 At the end you can find my audio tools library (to finish) free to use. The famous french song "Frère Jacques" is fully coded as an example.
 
-Support at : matthieu.cabos@sfr.fr
+Support at : matthieu.cabos@umontpellier.fr
