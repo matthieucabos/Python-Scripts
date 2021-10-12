@@ -1,0 +1,6 @@
+﻿Mapping.write\_in\_tmp
+======================
+
+.. currentmodule:: Mapping
+
+.. autofunction:: write_in_tmp

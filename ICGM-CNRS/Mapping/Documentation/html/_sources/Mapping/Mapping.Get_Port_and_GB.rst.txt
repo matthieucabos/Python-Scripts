@@ -1,0 +1,6 @@
+﻿Mapping.Get\_Port\_and\_GB
+==========================
+
+.. currentmodule:: Mapping
+
+.. autofunction:: Get_Port_and_GB

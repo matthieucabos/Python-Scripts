@@ -1,0 +1,6 @@
+﻿Mapping.get\_content
+====================
+
+.. currentmodule:: Mapping
+
+.. autofunction:: get_content

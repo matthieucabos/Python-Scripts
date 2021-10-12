@@ -1,0 +1,6 @@
+﻿Mapping.Get\_switch\_port\_dict
+===============================
+
+.. currentmodule:: Mapping
+
+.. autofunction:: Get_switch_port_dict
