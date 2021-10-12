@@ -7,7 +7,7 @@ __author__="CABOS Matthieu"
 __date__=12/10/2021
 
 # Penser a recuperer les fichiers sur tftp.srv-prive.icgm.fr:/var/lib/tftpboot/snoop
-os.system('scp mcabos@tftp.srv-prive.icgm.fr:/var/lib/tftpboot/snoop/* .')
+# os.system('scp mcabos@tftp.srv-prive.icgm.fr:/var/lib/tftpboot/snoop/* .')
 
 switch_dict={
 'balard-1D-1':'10.14.0.49',
@@ -57,8 +57,8 @@ def build_ip_mac_dict(tftp_Content):
 	MAC=""
 	regex = r"[0-9a-z]{4}\.[0-9a-z]{4}\.[0-9a-z]{4}"
 	regex2=r"([0-9]\/){2}[0-9]*"
+	ip=re.compile(r'\d+\.\d+\.\d+\.\d+')
 	for line in tftp_Content:
-		ip=re.compile(r'\d+\.\d+\.\d+\.\d+')
 		matches = re.finditer(regex, line, re.MULTILINE)
 		res_ip=ip.match(line)
 		for matchNum, match in enumerate(matches, start=1):
@@ -159,7 +159,6 @@ def Get_Port_and_GB(ip_switch,Final_dict):
 
 	return Final_dict
 
-
 def Cisco2Socket(Cisco_name,*args):
 	"""
 		Getting the exact Room Socket Name from the GigabitEthernet Triolet provided by Cisco informations.
@@ -234,7 +233,7 @@ def update_Room_Sockets(ip_switch,Final_dict):
 		if v[3]==ip_switch:
 			liste.append(v[5])
 	ind=0
-	Plug_liste=Cisco2Socket(switch_dict2[ip_switch],' '.join(liste))		
+	Plug_liste=Cisco2Socket(switch_dict2[ip_switch],' '.join(liste))	
 	for k,v in Final_dict.items():
 		if v[3]==ip_switch:
 			try:
@@ -253,7 +252,7 @@ for switch in switch_dict.keys():
 # Brownsing ods file
 file_name='Ordinateurs.ods'
 records = p.get_array(file_name=file_name)
-
+regex=r"/[0-9]+$"
 Final_dict={}
 Final_dict['Nom de la machine']=['@mac', '@ip machine', 'nom switch', '@ip switch', 'n° port', 'Triolet Gigabit','n° Prise']
 # Searching current mac in @MAC database
@@ -261,7 +260,10 @@ for record in records:
 	for switch in switch_dict.keys():
 		for k,v in ip2mac[switch].items():
 			if record[1] == k : 
-				Final_dict[record[0]]=[k,v[0],switch,switch_dict[switch],0,v[1],""]
+				matches=re.finditer(regex,v[1],re.MULTILINE)
+				for matchNum, match in enumerate(matches, start=1):
+					port=match.group()[1:]
+				Final_dict[record[0]]=[k,v[0],switch,switch_dict[switch],port,v[1],""]
 
 
 # TODO : Loop foreach Cisco Switch to get Full Contents Updated
@@ -281,6 +283,20 @@ for k,v in Final_dict.items():
 	to_write.append(line)
 	print(line)
 
-Final_dict=update_Room_Sockets('10.14.0.49',Final_dict)
+
+liste_switch=['10.14.0.49',
+'10.14.0.51',
+'10.14.0.58',
+'10.14.0.60',
+'10.14.0.62',
+'10.14.0.67',
+'10.14.0.69',
+'10.14.0.74',
+'10.14.0.76',
+'10.14.0.78',
+'10.14.0.80']
+
+# for sw in liste_switch:
+# 	Final_dict=update_Room_Sockets(sw,Final_dict)
 p.isave_as(array=to_write,dest_file_name='test.ods')
 # os.system('rm tmp*')
