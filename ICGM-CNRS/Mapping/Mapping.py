@@ -213,6 +213,40 @@ def Cisco2Socket(Cisco_name,*args):
 		rez.append(GBname[:-1])
 	return rez
 
+def Cis2Socket(Cisco_name,Final_dict):
+	"""
+		Getting the exact Room Socket Name from the GigabitEthernet Triolet provided by Cisco informations.
+		The Socket Name is stored in the given Dictionnary
+
+		=============== ============= ==========================================
+		**Parameters**   **Type**      **Description**
+		*Cisco_name*     String        The exact name of the Switch 
+		*Final_dict*     Dictionnary   The Final Dictionnary to be updated
+		=============== ============= ==========================================
+
+		:Returns: Dictionnary : The Final Dictionnary to be write updated
+	"""
+	regex=r'[A-Z][0-9][A-Z][0-9]+.[0-9]*'
+	os.system('ssh -t '+str(Cisco_name)+' show interface description > Description_'+str(Cisco_name))
+	f=open('Description_'+str(Cisco_name),'r')
+	l=f.readlines()
+	Tmp_dict={v:k for k,v in switch_dict2.items()}
+	Plug_liste=[]
+	for k,v in Final_dict.items():
+		if v[3] == Tmp_dict[Cisco_name]:
+			Plug_liste.append((v[5],k))
+	for line in l:
+		for hw in Plug_liste:
+		    if hw[0] in line:
+		    	matches = re.finditer(regex, line,re.MULTILINE)
+		    	for matchNum, match in enumerate(matches, start=1):
+		    		tmp=Final_dict[hw[1]]
+		    		tmp[6]=match.group()
+		    		Final_dict[hw[1]]=tmp
+		    	del Plug_liste[Plug_liste.index(hw)]
+	return Final_dict
+
+
 def update_Room_Sockets(ip_switch,Final_dict):
 	"""
 		Updating the Room Sockets Name field of the Dictionnary using the Cisco2Socket Procedure.
@@ -243,6 +277,7 @@ def update_Room_Sockets(ip_switch,Final_dict):
 				break
 	return Final_dict
 
+os.system('scp mcabos@tftp.srv-prive.icgm.fr:/var/lib/tftpboot/snoop/* .')
 # Building IP:MAC dict
 ip2mac={}
 for switch in switch_dict.keys():
@@ -274,6 +309,14 @@ ip='10.14.0.49'
 write_in_tmp(ip) # As example
 Final_dict=Get_Port_and_GB(ip,Final_dict)
 # TODO : End Loop
+
+
+
+# for sw in liste_switch:
+# 	Final_dict=update_Room_Sockets(sw,Final_dict)
+for Cisco_name in switch_dict2.values():
+	Final_dict=Cis2Socket(Cisco_name,Final_dict)
+
 line=[]
 to_write=[]
 for k,v in Final_dict.items():
@@ -281,22 +324,9 @@ for k,v in Final_dict.items():
 	line.append(k)
 	line.extend(v)
 	to_write.append(line)
-	print(line)
+	# print(line)
 
-
-liste_switch=['10.14.0.49',
-'10.14.0.51',
-'10.14.0.58',
-'10.14.0.60',
-'10.14.0.62',
-'10.14.0.67',
-'10.14.0.69',
-'10.14.0.74',
-'10.14.0.76',
-'10.14.0.78',
-'10.14.0.80']
-
-# for sw in liste_switch:
-# 	Final_dict=update_Room_Sockets(sw,Final_dict)
 p.isave_as(array=to_write,dest_file_name='test.ods')
-# os.system('rm tmp*')
+os.system('rm tmp*')
+os.system('rm Description*')
+os.system('rm balard*')
