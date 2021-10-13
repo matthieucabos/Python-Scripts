@@ -2,21 +2,20 @@
 A Reportery containing various utility python scripts
 
  # Author  : CABOS Matthieu
- # Release : WIP
+ # Release : 2018 -> 2021
  # Organization : CNRS
 
 You can find five sub repertories containing respectively :
-  * Picture, data, signals 
-and Video Crypter algorithms Using The cmatrix Library
-  * Find and replace algorithm to write and replace parts of code in a full developpement-project 
-  * A Maths library containing redefined library : complex arithmetic, equation resolution, a 3D vectorial lib and various utility scripts to finish/adapt to your work.
-  * My Work In Progress repertory containing an hybryd data structure called SkipTree, an unfinished json parser and various basics functions.
-  * The fastest Sorting Algorithm (Shell sort)
-  * A Unitary function tester as decorator
-  * My ICGM-CNRS Workcloud containing :
-      * DHCP Server Administration Tools
-      * SNMP Server Administration Tools
-      * Cisco Mapping Administration Tools
+  * **Cryptograhic algorithms** :
+      * **Video Cryptographic Algorithm** using the cmatrix Library
+      * **Raptor Cryptographic Algorithm** Originals Source Code
+  * **Find and replace algorithm** to write and replace parts of code in a full developpement-project 
+  * The **fastest Sorting Algorithm** (Shell sort)
+  * A **Unitary function tester** as decorator
+  * My **ICGM-CNRS Workcloud** containing :
+      * **DHCP Server Administration Tools**
+      * **SNMP Server Administration Tools**
+      * **Cisco Mapping Administration Tools**
   
 At the end you can find my audio tools library (to finish) free to use. The famous french song "Frère Jacques" is fully coded as an example.
 
