@@ -1,11 +1,11 @@
 # Python Utility
 A Reportery containing various utility python scripts
 
- **Author**  : CABOS Matthieu
+ **Author**  : *CABOS Matthieu*
  
- **Release** : 2018 -> 2021
+ **Release** : *2018 -> 2021*
  
- **Organization** : CNRS
+ **Organization** : **CNRS**
  
  _______________________________________________________________________________________
 
