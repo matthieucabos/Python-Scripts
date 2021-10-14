@@ -3,7 +3,7 @@ A Reportery containing various utility python scripts
 
  **Author**  : *CABOS Matthieu*
  
- **Release** : *2018 -> 2021*
+ **Release** : *2018 - 2021*
  
  **Organization** : **CNRS**
  
