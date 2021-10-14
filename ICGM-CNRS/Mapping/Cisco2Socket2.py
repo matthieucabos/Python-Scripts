@@ -15,6 +15,7 @@ switch_dict2={
 '10.14.0.62':'Balard-2H-1',
 '10.14.0.67':'Balard-3D-1',
 '10.14.0.69':'Balard-3G-1',
+'10.14.0.70':'Balard-3G-2',
 '10.14.0.74':'Balard-4C-1',
 '10.14.0.76':'Balard-4D-1',
 '10.14.0.78':'Balard-4G-1',
@@ -28,7 +29,7 @@ for i in range(2,len(sys.argv)):
 	Socket_name.append(sys.argv[i])
 
 def Cisco2Socket():
-	Cisco_list=['Balard-EP-1','Balard-PAC-1','Balard-PAC-2','Balard-RDC-1','Balard-1C-1','Balard-1D-1','Balard-1G-1','Balard-1G-2','Balard-1H-1','Balard-2C-1','Balard-2D-1','Balard-2G-1','Balard-2H-1','Balard-2H-2','Balard-3C-1','Balard-3D-1','Balard-3G-1','Balard-3H-1','Balard-4C-1','Balard-4D-1','Balard-4G-1','Balard-4H-1']
+	Cisco_list=['Balard-EP-1','Balard-PAC-1','Balard-PAC-2','Balard-RDC-1','Balard-1C-1','Balard-1D-1','Balard-1G-1','Balard-1G-2','Balard-1H-1','Balard-2C-1','Balard-2D-1','Balard-2G-1','Balard-2H-1','Balard-2H-2','Balard-3C-1','Balard-3D-1','Balard-3G-1','Balard-3G-2','Balard-3H-1','Balard-4C-1','Balard-4D-1','Balard-4G-1','Balard-4H-1']
 	f=open("Cisco2Socket.sh","a")
 	f.write('#!/bin/bash\n# Author : CABOS Matthieu\n# Date : 08/10/2021\nterm shell\n')
 

@@ -17,6 +17,7 @@ switch_dict={
 'balard-2H-1':'10.14.0.62',
 'balard-3D-1':'10.14.0.67',
 'balard-3G-1':'10.14.0.69',
+'balard-3G-2':'10.14.0.70',
 'balard-4C-1':'10.14.0.74',
 'balard-4D-1':'10.14.0.76',
 'balard-4G-1':'10.14.0.78',
@@ -31,6 +32,7 @@ switch_dict2={
 '10.14.0.62':'Balard-2H-1',
 '10.14.0.67':'Balard-3D-1',
 '10.14.0.69':'Balard-3G-1',
+'10.14.0.70':'Balard-3G-2',
 '10.14.0.74':'Balard-4C-1',
 '10.14.0.76':'Balard-4D-1',
 '10.14.0.78':'Balard-4G-1',
@@ -175,7 +177,7 @@ def Cisco2Socket(Cisco_name,*args):
 	for i in range(len(args)):
 		Socket_name.append(args[i])
 
-	Cisco_list=['Balard-EP-1','Balard-PAC-1','Balard-PAC-2','Balard-RDC-1','Balard-1C-1','Balard-1D-1','Balard-1G-1','Balard-1G-2','Balard-1H-1','Balard-2C-1','Balard-2D-1','Balard-2G-1','Balard-2H-1','Balard-2H-2','Balard-3C-1','Balard-3D-1','Balard-3G-1','Balard-3H-1','Balard-4C-1','Balard-4D-1','Balard-4G-1','Balard-4H-1']
+	Cisco_list=['Balard-EP-1','Balard-PAC-1','Balard-PAC-2','Balard-RDC-1','Balard-1C-1','Balard-1D-1','Balard-1G-1','Balard-1G-2','Balard-1H-1','Balard-2C-1','Balard-2D-1','Balard-2G-1','Balard-2H-1','Balard-2H-2','Balard-3C-1','Balard-3D-1','Balard-3G-1','Balard-3G-2','Balard-3H-1','Balard-4C-1','Balard-4D-1','Balard-4G-1','Balard-4H-1']
 	f=open("Cisco2Socket.sh","a")
 	f.write('#!/bin/bash\n# Author : CABOS Matthieu\n# Date : 08/10/2021\nterm shell\n')
 	Cisco_Rep=[]	
@@ -232,18 +234,21 @@ def Cis2Socket(Cisco_name,Final_dict):
 	l=f.readlines()
 	Tmp_dict={v:k for k,v in switch_dict2.items()}
 	Plug_liste=[]
+
 	for k,v in Final_dict.items():
-		if v[3] == Tmp_dict[Cisco_name]:
-			Plug_liste.append((v[5],k))
+		if v[4] == Tmp_dict[Cisco_name]:
+			Plug_liste.append((v[6][2:],k))
+
 	for line in l:
 		for hw in Plug_liste:
 		    if hw[0] in line:
 		    	matches = re.finditer(regex, line,re.MULTILINE)
 		    	for matchNum, match in enumerate(matches, start=1):
 		    		tmp=Final_dict[hw[1]]
-		    		tmp[6]=match.group()
+		    		tmp[7]=match.group()
 		    		Final_dict[hw[1]]=tmp
 		    	del Plug_liste[Plug_liste.index(hw)]
+
 	return Final_dict
 
 
@@ -275,10 +280,90 @@ def update_Room_Sockets(ip_switch,Final_dict):
 				ind+=1
 			except:
 				break
+
 	return Final_dict
 
+def Get_Dpt(file_name):
+	"""
+		Getting Departement ID from the file_name ods file containing all the Vlans Informations.
+		The Vlan name is readed and associated to its Id number.
+
+		=============== =========== =========================
+		**Parameters**   **Type**   **Description**
+		*file_name*       String     An .ods file to read
+		=============== =========== =========================
+
+		:Returns: Dictionnary : The Departement dictionnary associating a Departement Id to a Computer Name on the network
+	"""
+	Dpt2Int_dict={
+	'DPT1':510,
+	'DPT2':511,
+	'DPT3':512,
+	'DPT4':513,
+	'DPT5':514,
+	'SGAF':524,
+	'INSTRU-ON':515,
+	'SSI':525,
+	'INSTRU-OFF':516,
+	'IMPRIM':518,
+	'IDRAC-CIN':528,
+	'IDRAC':501,
+	'ExpProtect':526
+	}
+
+	Dpt_dict={}
+	Records = p.get_array(file_name=file_name)
+	Dpt_name=''
+
+	for record in Records:
+		for Dpt,v in Dpt2Int_dict.items():
+			if Dpt in record[2] :
+				Dpt_dict[record[0]]=v 
+				break
+
+	return Dpt_dict
+
+def Get_Comm(file_name,Final_dict):
+	"""
+		Getting Comments fields from the '.ods' file_name.
+		It returns a Dictionnary associating a Computer name to its Comments.
+ 
+ 		=============== ============= =============================================
+		**Parameters**   **Type**      **Description**
+		*file_name*      String         The .ods file_name to read
+		*Final_dict*     Dictionnary    The Main Informations Dictionnary to read
+		=============== ============= =============================================
+
+
+		:Returns: Dictionnary : A Dictionnary associating Comments to the linked Computer Name on the network
+	"""
+	Comm_dict={}
+	Records = p.get_array(file_name=file_name)
+	Comm=''
+
+	for record in Records:
+		if record[0] in Final_dict.keys():
+			Comm_dict[record[0]]=record[3]
+	return Comm_dict
+
+def Get_not_connected_dict(file_name,Final_dict):
+	Not_Conctd_Dict={}
+	Records = p.get_array(file_name=file_name)
+	dpt_dict=Get_Dpt(file_name)
+
+	for record in Records:
+		if not record[0] in Final_dict.keys():
+			try:
+				Not_Conctd_Dict[record[0]]=[record[1],Dpt_dict[record[0]],'','','','','','',record[3]]
+			except:
+				pass
+	return Not_Conctd_Dict
+
+# Getting infos from the Tftpboot server
 os.system('scp mcabos@tftp.srv-prive.icgm.fr:/var/lib/tftpboot/snoop/* .')
-# Building IP:MAC dict
+Dpt_dict=Get_Dpt('Ordinateurs.ods')
+
+#Building IP:MAC dict
 ip2mac={}
 for switch in switch_dict.keys():
 	Content=get_content(switch)
@@ -289,8 +374,9 @@ file_name='Ordinateurs.ods'
 records = p.get_array(file_name=file_name)
 regex=r"/[0-9]+$"
 Final_dict={}
-Final_dict['Nom de la machine']=['@mac', '@ip machine', 'nom switch', '@ip switch', 'n° port', 'Triolet Gigabit','n° Prise']
-# Searching current mac in @MAC database
+Final_dict['Nom de la machine']=['@mac','Departement', '@ip machine', 'nom switch', '@ip switch', 'n° port', 'Triolet Gigabit','n° Prise','Commentaires']
+
+# Searching current mac in @MAC database and updating Dictionnary Fields
 for record in records:
 	for switch in switch_dict.keys():
 		for k,v in ip2mac[switch].items():
@@ -298,25 +384,27 @@ for record in records:
 				matches=re.finditer(regex,v[1],re.MULTILINE)
 				for matchNum, match in enumerate(matches, start=1):
 					port=match.group()[1:]
-				Final_dict[record[0]]=[k,v[0],switch,switch_dict[switch],port,v[1],""]
+				Final_dict[record[0]]=[k,Dpt_dict[record[0]],v[0],switch,switch_dict[switch],port,"Gi"+v[1],"",'']
 
-
-# TODO : Loop foreach Cisco Switch to get Full Contents Updated
-
-# Updating the Final Dictionnary to be write
-# for ip in switch_dict2.keys():
-ip='10.14.0.49'
-write_in_tmp(ip) # As example
-Final_dict=Get_Port_and_GB(ip,Final_dict)
-# TODO : End Loop
-
-
+# Updating Comments Field
+Comm=Get_Comm('Ordinateurs.ods',Final_dict)
+for k,v in Final_dict.items():
+	if not (k == 'Nom de la machine'):
+		tmp=v 
+		tmp[8]=Comm[k]
+		Final_dict[k]=tmp
 
 # for sw in liste_switch:
 # 	Final_dict=update_Room_Sockets(sw,Final_dict)
+
+# Updating Room Sockets Names Field
 for Cisco_name in switch_dict2.values():
 	Final_dict=Cis2Socket(Cisco_name,Final_dict)
 
+# Building the not-conected Dictionnarry
+Not_Conctd_Dict=Get_not_connected_dict('Ordinateurs.ods',Final_dict)
+
+# Packaging as array to write
 line=[]
 to_write=[]
 for k,v in Final_dict.items():
@@ -324,9 +412,20 @@ for k,v in Final_dict.items():
 	line.append(k)
 	line.extend(v)
 	to_write.append(line)
-	# print(line)
 
-p.isave_as(array=to_write,dest_file_name='test.ods')
-os.system('rm tmp*')
+to_write_ntc=[['Nom de la machine','@mac','Departement', '@ip machine', 'nom switch', '@ip switch', 'n° port', 'Triolet Gigabit','n° Prise','Commentaires']]
+for k,v in Not_Conctd_Dict.items():
+	line=[]
+	line.append(k)
+	line.extend(v)
+	to_write_ntc.append(line)
+
+Content={'Sheet 1':to_write, 'Sheet2':to_write_ntc}
+# print(Content)
+# Saving ods file
+book = p.Book(Content)
+book.save_as('TftpBoot_List.ods')
+
+# p.isave_as(array=to_write,dest_file_name='TftpBoot_List.ods')
 os.system('rm Description*')
 os.system('rm balard*')
