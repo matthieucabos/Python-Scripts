@@ -1,9 +1,13 @@
 # Python Utility
 A Reportery containing various utility python scripts
 
- # Author  : CABOS Matthieu
- # Release : 2018 -> 2021
- # Organization : CNRS
+ **Author**  : CABOS Matthieu
+ 
+ **Release** : 2018 -> 2021
+ 
+ **Organization** : CNRS
+ 
+ _______________________________________________________________________________________
 
 You can find five sub repertories containing respectively :
   * **Cryptograhic algorithms** :
