@@ -1,8 +1,12 @@
 # Python Scripts
 
-# Author  : CABOS Matthieu
-# Release : 2021
-# Organization : ICGM-CNRS
+**Author**  : CABOS Matthieu
+
+**Release** : 2021
+
+**Organization** : ICGM-CNRS
+
+______________________________________________________________________________________________________
 
 Here you will find my Python Work repesitory for the ICGM institute - Montpellier - France.
 You can see three main parts of my work :
