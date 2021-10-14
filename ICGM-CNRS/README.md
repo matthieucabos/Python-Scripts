@@ -1,10 +1,10 @@
 # Python Scripts
 
-**Author**  : CABOS Matthieu
+**Author**  : **CABOS Matthieu**
 
-**Release** : 2021
+**Release** : **2021**
 
-**Organization** : ICGM-CNRS
+**Organization** : *ICGM-CNRS*
 
 ______________________________________________________________________________________________________
 
