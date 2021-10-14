@@ -1,6 +1,0 @@
-﻿Mapping.Cisco2Socket
-====================
-
-.. currentmodule:: Mapping
-
-.. autofunction:: Cisco2Socket

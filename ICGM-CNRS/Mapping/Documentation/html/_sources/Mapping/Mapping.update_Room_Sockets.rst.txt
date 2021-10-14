@@ -1,6 +1,0 @@
-﻿Mapping.update\_Room\_Sockets
-=============================
-
-.. currentmodule:: Mapping
-
-.. autofunction:: update_Room_Sockets
