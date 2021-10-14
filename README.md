@@ -10,7 +10,7 @@ A Repesitory containing various utility python scripts
  
  _______________________________________________________________________________________
 
-You can find five sub repertories containing respectively :
+You can find five main projects containing respectively :
   * **Cryptograhic algorithms** :
       * *Raptor Cryptographic Algorithm* Originals Source Code
   * **Find and replace algorithm** to write and replace parts of code in a full developpement-project 
