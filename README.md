@@ -1,5 +1,6 @@
-# Python Utility
-A Reportery containing various utility python scripts
+# Python Scripts
+
+A Repesitory containing various utility python scripts
 
  **Author**  : *CABOS Matthieu*
  
