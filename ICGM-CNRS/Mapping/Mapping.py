@@ -347,6 +347,17 @@ def Get_Comm(file_name,Final_dict):
 	return Comm_dict
 
 def Get_not_connected_dict(file_name,Final_dict):
+	"""
+		Similary building a Dictionnary with fewer informations for the disconnected Users.
+
+		=============== ============== ===========================================
+		**Parameters**   **Type**      **Description**
+		*file_name*      String        The .ods file_name to read
+		*Final_dict*     Dictionnary   The Main Informations Dictionnary to read
+		=============== ============== ===========================================
+
+		:Returns: Dictionnary :  A Dictionnary linking informations from the server to store the Disconnected Authorised Users
+	"""
 	Not_Conctd_Dict={}
 	Records = p.get_array(file_name=file_name)
 	dpt_dict=Get_Dpt(file_name)
