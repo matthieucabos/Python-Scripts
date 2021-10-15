@@ -17,7 +17,7 @@ To install, please launch first the Shell Script using the syntax :
 # Usage
 
 To use it, you have to pass your own Cisco Switch List and Dictionnary preserving the use strucutre.
-The readed 'Ordinateurs.ods' file is the DHCP Authorized list write in .ods file using the form :
+The readed 'Ordinateurs.ods' file is the DHCP Authorized list recorded in .ods file using the form :
 
 **Hostname | Mac@ | Vlan | User**
 
@@ -41,13 +41,13 @@ Server Administrator Tools/
 
  To get tftpboot informations, please to refer the tftp server and replace command at line 417 :
  
- *os.system('scp mcabos@tftp.srv-prive.icgm.fr:/var/lib/tftpboot/snoop/* .')*
+ *os.system('scp mcabos@tftp.srv-prive.icgm.fr:/var/lib/tftpboot/snoop/\* .')*
  
  by :
  
- **os.system('scp <user>@<tftp server>:/var/lib/tftpboot/snoop/* .')**
+ *os.system('scp [user@tftp server]:/var/lib/tftpboot/snoop/\* .')*
    
- Once the Structure properly builded, please to use with the following syntax: 
+ Once the Structure properly builded, please to use with the following syntax since the Mapping_Folder : 
  
  **python3 Mapping.py**
  
