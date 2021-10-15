@@ -1,6 +1,7 @@
 import sys
 import os
 import pyexcel as p
+
 import re
 
 __author__="CABOS Matthieu"
@@ -21,7 +22,11 @@ switch_dict={
 'balard-4C-1':'10.14.0.74',
 'balard-4D-1':'10.14.0.76',
 'balard-4G-1':'10.14.0.78',
-'balard-4H-1':'10.14.0.80'
+'balard-4H-1':'10.14.0.80',
+'balard-SRV':'10.14.0.20',
+'balard-SRV-SUP':'10.14.0.21',
+'balard-srv-cines':'10.14.0.30',
+'balard-sup-cines':'10.14.0.31'
 }
 
 switch_dict2={
@@ -36,7 +41,11 @@ switch_dict2={
 '10.14.0.74':'Balard-4C-1',
 '10.14.0.76':'Balard-4D-1',
 '10.14.0.78':'Balard-4G-1',
-'10.14.0.80':'Balard-4H-1'
+'10.14.0.80':'Balard-4H-1',
+'10.14.0.20':'Balard-SRV',
+'10.14.0.21':'Balard-SRV-SUP',
+'10.14.0.30':'Balard-SRV-CINES',
+'10.14.0.31':'Balard-SUP-CINES'
 }
 
 def build_ip_mac_dict(tftp_Content):
@@ -177,7 +186,35 @@ def Cisco2Socket(Cisco_name,*args):
 	for i in range(len(args)):
 		Socket_name.append(args[i])
 
-	Cisco_list=['Balard-EP-1','Balard-PAC-1','Balard-PAC-2','Balard-RDC-1','Balard-1C-1','Balard-1D-1','Balard-1G-1','Balard-1G-2','Balard-1H-1','Balard-2C-1','Balard-2D-1','Balard-2G-1','Balard-2H-1','Balard-2H-2','Balard-3C-1','Balard-3D-1','Balard-3G-1','Balard-3G-2','Balard-3H-1','Balard-4C-1','Balard-4D-1','Balard-4G-1','Balard-4H-1']
+	Cisco_list=[
+	'Balard-EP-1',
+	'Balard-PAC-1',
+	'Balard-PAC-2',
+	'Balard-RDC-1',
+	'Balard-1C-1',
+	'Balard-1D-1',
+	'Balard-1G-1',
+	'Balard-1G-2',
+	'Balard-1H-1',
+	'Balard-2C-1',
+	'Balard-2D-1',
+	'Balard-2G-1',
+	'Balard-2H-1',
+	'Balard-2H-2',
+	'Balard-3C-1',
+	'Balard-3D-1',
+	'Balard-3G-1',
+	'Balard-3G-2',
+	'Balard-3H-1',
+	'Balard-4C-1',
+	'Balard-4D-1',
+	'Balard-4G-1',
+	'Balard-4H-1',
+	'Balard-SRV',
+	'Balard-SRV-SUP',
+	'Balard-SRV-CINES',
+	'Balard-SUP-CINES']
+	
 	f=open("Cisco2Socket.sh","a")
 	f.write('#!/bin/bash\n# Author : CABOS Matthieu\n# Date : 08/10/2021\nterm shell\n')
 	Cisco_Rep=[]	
@@ -372,7 +409,7 @@ def Get_not_connected_dict(file_name,Final_dict):
 
 # Getting infos from the Tftpboot server
 os.system('scp mcabos@tftp.srv-prive.icgm.fr:/var/lib/tftpboot/snoop/* .')
-Dpt_dict=Get_Dpt('Ordinateurs.ods')
+Dpt_dict=Get_Dpt('../Ordinateurs.ods')
 
 #Building IP:MAC dict
 ip2mac={}
@@ -381,7 +418,7 @@ for switch in switch_dict.keys():
 	ip2mac[switch]=build_ip_mac_dict(Content)
 
 # Brownsing ods file
-file_name='Ordinateurs.ods'
+file_name='../Ordinateurs.ods'
 records = p.get_array(file_name=file_name)
 regex=r"/[0-9]+$"
 Final_dict={}
@@ -398,7 +435,7 @@ for record in records:
 				Final_dict[record[0]]=[k,Dpt_dict[record[0]],v[0],switch,switch_dict[switch],port,"Gi"+v[1],"",'']
 
 # Updating Comments Field
-Comm=Get_Comm('Ordinateurs.ods',Final_dict)
+Comm=Get_Comm('../Ordinateurs.ods',Final_dict)
 for k,v in Final_dict.items():
 	if not (k == 'Nom de la machine'):
 		tmp=v 
@@ -413,7 +450,7 @@ for Cisco_name in switch_dict2.values():
 	Final_dict=Cis2Socket(Cisco_name,Final_dict)
 
 # Building the not-conected Dictionnarry
-Not_Conctd_Dict=Get_not_connected_dict('Ordinateurs.ods',Final_dict)
+Not_Conctd_Dict=Get_not_connected_dict('../Ordinateurs.ods',Final_dict)
 
 # Packaging as array to write
 line=[]
@@ -432,11 +469,82 @@ for k,v in Not_Conctd_Dict.items():
 	to_write_ntc.append(line)
 
 Content={'Sheet 1':to_write, 'Sheet2':to_write_ntc}
-# print(Content)
+
 # Saving ods file
 book = p.Book(Content)
-book.save_as('TftpBoot_List.ods')
-
-# p.isave_as(array=to_write,dest_file_name='TftpBoot_List.ods')
+book.save_as('TftpBoot_List.xlsx')
 os.system('rm Description*')
 os.system('rm balard*')
+
+
+# Setting Ods Document Layout
+from openpyxl import *
+
+Wb=load_workbook(filename='TftpBoot_List.xlsx')
+
+border=styles.borders.Border(left=styles.borders.Side(style='medium'), 
+                     right=styles.borders.Side(style='medium'), 
+                     top=styles.borders.Side(style='medium'), 
+                     bottom=styles.borders.Side(style='double'))
+border2=styles.borders.Border(left=styles.borders.Side(style='thin'), 
+                     right=styles.borders.Side(style='double'), 
+                     top=styles.borders.Side(style='thin'), 
+                     bottom=styles.borders.Side(style='thin'))
+border3=styles.borders.Border(left=styles.borders.Side(style='thin'), 
+                     right=styles.borders.Side(style='thin'), 
+                     top=styles.borders.Side(style='thin'), 
+                     bottom=styles.borders.Side(style='thin'))
+font=styles.Font(color="00333333",size=12,bold=True)
+font2=styles.Font(color="00333333",size=11,bold=False)
+font3=styles.Font(color="00333300",italic=True)
+fill = styles.PatternFill("solid",fgColor="DDDDDD")
+fill2 = styles.PatternFill("solid",fgColor="e8e8e8")
+
+for Ws in Wb.worksheets:
+	for col in Ws.columns:
+		maxi=0
+		column=utils.get_column_letter(col[0].column)
+		for cell in col:
+			try:
+				if(len(str(cell.value)) > maxi):
+					maxi=len(cell.value)
+			except:
+				pass 
+		adj_width=(maxi + 2)*1.2
+		Ws.column_dimensions[column].width = adj_width
+	Ws.showGridLines = True
+	for i in range(1,11):
+		Ws.cell(row=1,column=i).border=border
+		Ws.cell(row=1,column=i).font=font
+		Ws.cell(row=1,column=i).fill=fill
+	for i in range(2,Ws.max_row+1):
+		Ws.cell(row=i,column=1).border=border2
+		Ws.cell(row=i,column=1).font=font2
+		Ws.cell(row=i,column=1).fill=fill
+		if(i<Ws.max_row):
+			Ws.cell(row=i,column=2).font=font3
+			Ws.cell(row=i,column=2).fill=fill2
+			Ws.cell(row=i,column=2).border=border3
+			Ws.cell(row=i,column=3).fill=fill2
+			Ws.cell(row=i,column=3).border=border3
+			Ws.cell(row=i,column=4).font=font3
+			Ws.cell(row=i,column=4).fill=fill2
+			Ws.cell(row=i,column=4).border=border3
+			Ws.cell(row=i,column=5).fill=fill2
+			Ws.cell(row=i,column=5).border=border3
+			Ws.cell(row=i,column=6).font=font3
+			Ws.cell(row=i,column=6).fill=fill2
+			Ws.cell(row=i,column=6).border=border3
+			Ws.cell(row=i,column=7).fill=fill2
+			Ws.cell(row=i,column=7).border=border3
+			Ws.cell(row=i,column=8).fill=fill2
+			Ws.cell(row=i,column=8).border=border3
+			Ws.cell(row=i,column=9).fill=fill2
+			Ws.cell(row=i,column=9).border=border3
+			Ws.cell(row=i,column=10).fill=fill2
+			Ws.cell(row=i,column=10).border=border3
+Wb.save(filename='TftpBoot_List.xlsx')
+
+# Convert to .ods file
+os.system('soffice --headless --convert-to ods *.xlsx')
+os.system('rm *.xlsx')
