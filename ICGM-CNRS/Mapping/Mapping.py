@@ -48,6 +48,35 @@ switch_dict2={
 '10.14.0.31':'Balard-SUP-CINES'
 }
 
+Cisco_list=[
+'Balard-EP-1',
+'Balard-PAC-1',
+'Balard-PAC-2',
+'Balard-RDC-1',
+'Balard-1C-1',
+'Balard-1D-1',
+'Balard-1G-1',
+'Balard-1G-2',
+'Balard-1H-1',
+'Balard-2C-1',
+'Balard-2D-1',
+'Balard-2G-1',
+'Balard-2H-1',
+'Balard-2H-2',
+'Balard-3C-1',
+'Balard-3D-1',
+'Balard-3G-1',
+'Balard-3G-2',
+'Balard-3H-1',
+'Balard-4C-1',
+'Balard-4D-1',
+'Balard-4G-1',
+'Balard-4H-1',
+'Balard-SRV',
+'Balard-SRV-SUP',
+'Balard-SRV-CINES',
+'Balard-SUP-CINES']
+
 def build_ip_mac_dict(tftp_Content):
 	"""
 		Building Ip 2 @Mac dictionnarry from tftp boot server files (connected people).
@@ -186,34 +215,7 @@ def Cisco2Socket(Cisco_name,*args):
 	for i in range(len(args)):
 		Socket_name.append(args[i])
 
-	Cisco_list=[
-	'Balard-EP-1',
-	'Balard-PAC-1',
-	'Balard-PAC-2',
-	'Balard-RDC-1',
-	'Balard-1C-1',
-	'Balard-1D-1',
-	'Balard-1G-1',
-	'Balard-1G-2',
-	'Balard-1H-1',
-	'Balard-2C-1',
-	'Balard-2D-1',
-	'Balard-2G-1',
-	'Balard-2H-1',
-	'Balard-2H-2',
-	'Balard-3C-1',
-	'Balard-3D-1',
-	'Balard-3G-1',
-	'Balard-3G-2',
-	'Balard-3H-1',
-	'Balard-4C-1',
-	'Balard-4D-1',
-	'Balard-4G-1',
-	'Balard-4H-1',
-	'Balard-SRV',
-	'Balard-SRV-SUP',
-	'Balard-SRV-CINES',
-	'Balard-SUP-CINES']
+###
 	
 	f=open("Cisco2Socket.sh","a")
 	f.write('#!/bin/bash\n# Author : CABOS Matthieu\n# Date : 08/10/2021\nterm shell\n')
