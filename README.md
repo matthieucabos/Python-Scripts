@@ -11,8 +11,6 @@ A Repesitory containing various utility python scripts
  _______________________________________________________________________________________
 
 You can find five main projects containing respectively :
-  * **[*Cryptograhic algorithms*](https://github.com/matthieucabos/Python-Scripts/tree/master/Crypto)** :
-      * *Raptor Cryptographic Algorithm* Originals Source Code
   * **[*Find and replace algorithm*](https://github.com/matthieucabos/Python-Scripts/tree/master/Find%20and%20replace)** to write and replace parts of code in a full developpement-project 
   * The **fastest Sorting Algorithm** (Shell sort)
   * A **Unitary function tester** as decorator
