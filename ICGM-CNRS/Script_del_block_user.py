@@ -68,12 +68,7 @@ for Cisco in Gb_dict.keys():
 		for item in Gb_dict[Cisco]:
 			if item != None:
 				command=['interface GigabitEthernet'+str(item),'shutdown','no shutdown']
-				print(ssh_session.send_config_set(command))
-				# ssh_session.send_command("conf term\n", expect_string=r"#")
-				# ssh_session.send_command("interface GigabitEthernet"+str(item)+"\n", expect_string=r"#")
-				# ssh_session.send_command("shutdown\n", expect_string=r"#")
-				# ssh_session.send_command("no shutdown\n", expect_string=r"#")
-				# ssh_session.send_command("exit\n", expect_string=r"#")
+				ssh_session.send_config_set(command)
 		ssh_session.send_command("exit\n",expect_string=r"#")
 		ssh_session.disconnect()
 
