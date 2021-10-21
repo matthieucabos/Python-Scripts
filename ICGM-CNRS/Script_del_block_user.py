@@ -6,29 +6,6 @@ import netmiko
 __author__="CABOS Matthieu"
 __date__=18/10/2021
 
-Cisco_list=[
-'Balard-EP-1',
-'Balard-PAC-1',
-'Balard-PAC-2',
-'Balard-1C-1',
-'Balard-1D-1',
-'Balard-1G-1',
-'Balard-1H-1',
-'Balard-2C-1',
-'Balard-2D-1',
-'Balard-2G-1',
-'Balard-2H-1',
-'Balard-2H-2',
-'Balard-3C-1',
-'Balard-3D-1',
-'Balard-3G-1',
-'Balard-3G-2',
-'Balard-3H-1',
-'Balard-4C-1',
-'Balard-4D-1',
-'Balard-4G-1',
-'Balard-4H-1']
-
 IPSwitchs={
     'Balard-1C-1': '10.14.0.47',
     'Balard-1D-1': '10.14.0.49',
@@ -55,7 +32,7 @@ IPSwitchs={
 
 #Buildig Error dictionnary
 Error_dict={}
-for Cisco in Cisco_list:
+for Cisco in IPSwitchs.keys():
 	home= os.getenv('HOME')
 	user=os.getenv('USER')
 	keyfile=home+'/.ssh/cisco'
@@ -90,12 +67,13 @@ for Cisco in Gb_dict.keys():
 	                                         username=user, use_keys=True, key_file=keyfile)
 		for item in Gb_dict[Cisco]:
 			if item != None:
-				ssh_session.send_command("conf term\n", expect_string=r"#")
-				ssh_session.send_command("interface GigabitEthernet"+str(item)+"\n", expect_string=r"#")
-				ssh_session.send_command("shutdown\n", expect_string=r"#")
-				ssh_session.send_command("no shutdown\n", expect_string=r"#")
-				ssh_session.send_command("exit\n", expect_string=r"#")
-				ssh_session.send_command("conf term\n", expect_string=r"#")
+				command=['interface GigabitEthernet'+str(item),'shutdown','no shutdown']
+				print(ssh_session.send_config_set(command))
+				# ssh_session.send_command("conf term\n", expect_string=r"#")
+				# ssh_session.send_command("interface GigabitEthernet"+str(item)+"\n", expect_string=r"#")
+				# ssh_session.send_command("shutdown\n", expect_string=r"#")
+				# ssh_session.send_command("no shutdown\n", expect_string=r"#")
+				# ssh_session.send_command("exit\n", expect_string=r"#")
 		ssh_session.send_command("exit\n",expect_string=r"#")
 		ssh_session.disconnect()
 
