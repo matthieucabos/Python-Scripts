@@ -37,7 +37,7 @@ This script has been written to detect on a Network Monitor all the highThreshol
 To Use, please to respect the following syntax :
 
 ```bash
-./Get_ThreshlodExceeded.sh 
+./Get_ThresholdExceeded.sh 
 ```
 
 The Results are stored into the **Sockets.txt** File.
