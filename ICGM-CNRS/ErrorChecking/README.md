@@ -1,0 +1,51 @@
+# Cisco Error Checking
+
+**Author** *CABOS Matthieu*
+
+**Date** *10/2021*
+
+**Organisation** *ICGM-CNRS*
+
+***************************
+
+## Description
+
+This repository contain 2 main projects :
+  * **Script_del_block_user.py** : Get on the *Cisco Network* all the err-disable Errors Sockets and solve it keeping a Trace.
+  * **Get_ThresholdExceeded.sh** : Get on the *Network monitor ssh server* the threshold exceeded errors and return the associated Hardware Sockets.
+
+***************************
+
+## Script_del_block_user.py
+
+The Script_del_block_user search into the full Cisco network all the err-disable errors (disconnected Users).
+It works from these steps :
+  * **Building Error dictionnary** since the Cisco Comandline : ```bash show interface | i err-disable ``` applied to each of the Cisco Switch
+  * **Getting exact Gigait Ethernet Socket** from Error dictionnary and store them into Gb_dict Dictionnary using Regular Expression
+  * **Brownsing Cisco list** and write & apply associated Cisco Commands
+
+
+Please to use with the following syntax :
+
+```bash
+python3 Scrip_del_block_user.py
+```
+
+## Get_ThresholdExceeded.sh
+
+This script has been written to detect on a Network Monitor all the highThresholdExceeded Errors and get the exact associated Sockets Name
+To Use, please to respect the following syntax :
+
+```bash
+./Get_ThreshlodExceeded.sh 
+```
+
+The Results are stored into the **Sockets.txt** File.
+
+Please to ensure have the correct rights of connexion into the monitor to Use it.
+
+***************************
+
+## Support
+
+For any support request, please to mail @ matthieu.cabos@umontpellier.fr
