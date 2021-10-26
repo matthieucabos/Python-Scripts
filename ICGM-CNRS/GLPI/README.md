@@ -27,9 +27,14 @@ Folder Structure::
 ```bash
 .
 ├── GLPI
-│   └── Set_SQL_Roomname.py
+│   ├── Set_SQL_Roomname.py
+│   └── Table.sql
 └── Switchs.ods
+
 ```
+
+Where Table.sql is the SQL table generated since the **Set_Room** function instructions.
+
 ************************************
 
 To generate the associated SQL File, please to use the command :
