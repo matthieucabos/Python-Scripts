@@ -282,6 +282,7 @@ def ip_data_getter():
     	for i in range(0,int(nb_addr/2)):
     		ip_mac_dict[stream[i].rstrip(' \n')]=stream[i+int((nb_addr/2))].rstrip(' \n')
     	Old_Address_list.append(ip_mac_dict)
+    return Old_Address_list
 
     New_Address_list=[]
     dpt_mac_dict={}
