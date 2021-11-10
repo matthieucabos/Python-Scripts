@@ -26,6 +26,43 @@ Once each of these values informed, the dhcp configuration file is readed and th
 This script has been written for and uniquely for the ICGM-CNRS laboratory, the list of Cisco Switch is associated to this laboratory.
 To make it work in others Organisations, you have to adapt the Cisco List to your own Switchs Architecture.
 
+## ods2dhcp_guest.py
+
+This script was written to meet the requirements of a Guest subnet in a science lab (ICGM-CNRS).
+It use the DHCP Protocol, in force in this establishment.
+
+
+The script must be used in a correct environment with an associated **Invites.ods** file.
+
+```bash
+.
+├── Invites.ods
+└── ods2dhcp_guest.py
+```
+
+
+The algorithm is ruled by the following steps :
+* **Initialization of the Guest vlan**: *We initialize the Guest vlan with the associated information (id, IP addresses, etc.)*
+* **We start by rereading the old associations**: *As part of a simple update of the DHCP server, the old mac: ip associations are kept and only the last available ip address is retrieved*
+* **We browse the conf file of vlan 519**: *We identify the already existing associations*
+* **We read the Invites file**: *We read the Guests file to know the mac addresses of each guest*
+* **We browse the content of the file read**: *We read the content line by line by retrieving the date and address information in variables.*
+* **If the current date is between the arrival date and the departure date**: *The date management and comparison is carried out from the python datetime module, we only add the guest computer if the current date is between the date arrival and departure date.*
+* **We add the guest to the guest network**
+* **We update the DHCP information fields**: *We add the guest computer by updating the DHCP fields concerned*
+* **Either the computer is already known and we keep its IP**: *If the mac: ip association exists and is valid, it is kept*
+* **Either we add one**: *Otherwise we create a new association*
+* **We write the information in the dhcpd-519.conf file (the DHCP Guest server)**: *We write all the DHCP fields in the configuration file*
+* **We write the host file**: *We write the host file associated with the configuration*
+* **We write the rev file**: *We write the rev file associated with the configuration*
+
+
+Please to use with the correct syntax and associated files as below :
+
+```bash
+python3 ods2dhcp_guest.py
+```
+
 ## Ods_conf.py
 
 This Script read a file called in our organization Ordinateurs.ods containing following informations into a table with form :
