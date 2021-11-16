@@ -7,7 +7,6 @@ import uuid
 __author__='CABOS Matthieu'
 __date__=10/11/2021
 
-
 def TreatReg():
 
 	# Lecture et mise à jour du fichier des Invités Enregistrés (Les entrées ayant plus d'un an sont supprimées)
@@ -185,6 +184,22 @@ subnet 10.14.12.0 netmask 255.255.255.0 {
 # note that no range is given so dhcpd will not try to
 # assign IP addresses
 }
+include "/etc/dhcp/dhcpd-510.conf"; #vlan ICGM-DPT1-CMM
+include "/etc/dhcp/dhcpd-511.conf"; #vlan ICGM-DPT2-CMMM
+include "/etc/dhcp/dhcpd-512.conf"; #vlan ICGM-DPT3-MPH
+include "/etc/dhcp/dhcpd-513.conf"; #vlan ICGM-DPT4-CMNME
+include "/etc/dhcp/dhcpd-514.conf"; #vlan ICGM-DPT5-CPTM
+include "/etc/dhcp/dhcpd-524.conf"; #vlan ICGM-SGAF
+include "/etc/dhcp/dhcpd-515.conf"; #vlan ICGM-INSTRU-ON
+include "/etc/dhcp/dhcpd-525.conf"; #vlan ICGM-SSI
+include "/etc/dhcp/dhcpd-516.conf"; #vlan ICGM-INSTRU-OFF
+include "/etc/dhcp/dhcpd-518.conf"; #vlan ICGM-IMPRIM
+include "/etc/dhcp/dhcpd-519.conf"; #vlan ICGM-GUEST
+include "/etc/dhcp/dhcpd-528.conf"; #vlan ICGM-IDRAC-CIN
+include "/etc/dhcp/dhcpd-501.conf"; #vlan ICGM-IDRAC
+include "/etc/dhcp/dhcpd-530.conf"; #vlan ICGM-PT
+include "/etc/dhcp/dhcpd-526.conf"; #vlan ICGM-ExpProtect
+include "/etc/dhcp/dhcpd-529.conf"; #vlan ICGM-Did
 """);
 if not os.path.isfile("dhcpd-519.conf"):
 	counter=0
@@ -280,7 +295,7 @@ if info['content']!="":
     fvlan.write("#vlan: %d (%s)\n" %(info["id"],vlan));
     fvlan.write("subnet %s  netmask %s {" % (info['subnet'],info['netmask']))
     fvlan.write(info["content"]);
-    f1.write("include \"/etc/dhcp/dhcpd-%d.conf\"; #vlan %s\n" % (info["id"], vlan));
+    # f1.write("include \"/etc/dhcp/dhcpd-%d.conf\"; #vlan %s\n" % (info["id"], vlan));
     fvlan.write("\n}\n");
     fvlan.close();
     arpa=re.sub(r'([0-9]+)[.]([0-9]+)[.]([0-9]+)[.]0',r'\3.\2.\1', info["subnet"])
@@ -290,6 +305,9 @@ if info['content']!="":
 # On vérifie la duplication d'IP et on met a jour le fichier de configuration DHCP associé
 
 FalseIP=TreatConf()
-ReadAndWrite(len(FalseIP)-1)
+try:
+	ReadAndWrite(len(FalseIP)-1)
+except:
+	pass
 
 f1.close()
