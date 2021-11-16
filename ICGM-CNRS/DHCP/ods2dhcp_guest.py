@@ -2,9 +2,111 @@ import re
 import pyexcel as p
 import datetime
 import os
+import uuid
 
 __author__='CABOS Matthieu'
 __date__=10/11/2021
+
+
+def TreatReg():
+
+	# Lecture et mise à jour du fichier des Invités Enregistrés (Les entrées ayant plus d'un an sont supprimées)
+
+	ind=0
+	f=open("registred_guests",'r+')
+	Content=f.readlines()
+	NewContent=[]
+	today=datetime.date.today()
+	regex=r'[0-9]+-[0-9]+-[0-9]+'
+	for line in Content:
+		matches = re.finditer(regex, line, re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			if ind :
+				realDelta=0
+				Date=match.group()	
+				ind=0
+				RegDate=(datetime.date(int(Date[0:4]),int(Date[5:7]),int(Date[8:])))
+				Delta=(str(RegDate-today))
+				regex2=r'-[0-9]*'
+				matches2=re.finditer(regex2,Delta,re.MULTILINE)
+				for matchNum, match in enumerate(matches2, start=1):
+					realDelta= (int(match.group()) <= -365)
+				if not realDelta :
+					NewContent.append(line)
+				break
+			ind+=1	
+	f=open('registred_guests','w')
+	f.write(''.join(NewContent))
+	f.close()
+
+try:
+	TreatReg()
+except:
+	pass
+
+def verify_duplicate(liste):
+
+	# On vérifie la présence d'adresses dupliquées depuis le fichier de configuration DHCP
+
+	error=[]
+	duplicate=(False,0)
+	tmp=""
+	Ip=""
+	# Coursing the @ list
+	for i in range(len(liste)):
+		tmp=liste[i]
+		for j in range(i+1,len(liste)):
+			if tmp==liste[j]:  # Checking errors
+				regex=r"(\d+.){3}\d+"
+				matches = re.finditer(regex, liste[j], re.MULTILINE)
+				for matchNum, match in enumerate(matches, start=1):
+					Ip=match.group()
+				error.append(Ip)
+	if not (error==[]):
+		return error
+	else:
+		return None
+
+def TreatConf():
+
+	# On traite le fichier de configuration pour récupérer le nombre d'adresses IP dupliquées
+
+	# capture ip flag
+	ip_catch=False
+	# @ IP & MAC list
+	ip=[]
+	mac=[]
+	dpt='dhcpd-519.conf'
+	# courding the department list
+	content=os.popen("cat "+str(dpt)).readlines() # Getting raw content of dhcp conf files
+	for item in content:
+		try:
+			# I verify correspondance betwween MAC@ and Fixed_IP@
+			if (re.search(r'fixed-address',item)[0])!=None:        
+				ip.append(item)
+			if (re.search(r'hardware ethernet',item)[0])!=None:
+				mac.append(item)
+		except:
+			pass
+	return (verify_duplicate(ip))
+
+def ReadAndWrite(Times):
+
+	# Lecture et Mise à jour du fichier de configuration DHCP pour préserver la cohérence de la structure du sous réseau
+
+	NewContent='#vlan: 519 (ICGM-GUEST)\nsubnet 10.14.12.0  netmask 255.255.255.0 {\n'
+	f=open('dhcpd-519.conf','r')
+	Content=f.read()
+	regex=r'host(.*\n){10}'
+	matches=re.finditer(regex, Content, re.MULTILINE)
+	for matchNum, match in enumerate(matches, start=1):
+		if Times<0 :
+			NewContent+=match.group()
+		Times-=1
+	NewContent+='}'
+	f.close()
+	f=open('dhcpd-519.conf','w')
+	f.write(NewContent)
 
 # Initialisation du vlan Guest
 
@@ -31,6 +133,8 @@ ipRegex=r"fixed-address (10.14.[0-9.]+)"
 registred={}
 lastIP={}
 
+os.system('rm dhcpd-519.conf')
+
 # On parcourt le fichier conf du vlan 519
 
 info=vlans['ICGM-GUEST'];
@@ -41,7 +145,6 @@ if os.path.isfile("dhcpd-%d.conf"%(id)):
 	with open("dhcpd-%d.conf"%(id), "r") as openfileobject:
 		ip="";mac="";
 		for line in openfileobject:
-			# print(line)
 			matches = re.finditer(macRegex, line, re.MULTILINE)
 			for matchNum, match in enumerate(matches, start=1):
 				mac=(match.group())
@@ -53,6 +156,7 @@ if os.path.isfile("dhcpd-%d.conf"%(id)):
 				numbers=ip.split('.')
 				if(int(numbers[3])>=lastIP[id]):
 					lastIP[id]=int(numbers[3])+1
+
 
 # On lit le fichier Invites
 
@@ -85,31 +189,35 @@ subnet 10.14.12.0 netmask 255.255.255.0 {
 if not os.path.isfile("dhcpd-519.conf"):
 	counter=0
 else:
-	counter=int(os.popen('cat dhcpd-519.conf | tail -11 | head -1 | grep -Po "\K[0-9]*"').read())
+	counter = int(sum(1 for line in open('dhcpd-519.conf')) / 10)
 
-def get_date(string):
-	y=int(string[:4])
-	m=int(string[5:7])
-	d=int(string[8:])
-	return datetime.date(y,m,d)
+if os.path.isfile("registred_guests"):
+	f=open("registred_guests",'r')
+	RegContent=f.read()
+else:
+	RegContent=''
 
 # On parcours le contenu du fichier lu
 
+BreakFlag=0
 for record in records:
 	if (not record['Adresse Mac']==''):
-		str_date=str(record['Date d’arrivée'])
-		dateA=get_date(str_date)
-		str_date2=str(record['Date de départ'])
-		dateD=get_date(str_date2)
+		dateA=record['Date d’arrivée']
+		dateD=record['Date de départ']
 		today=datetime.date.today()
 
 		# Si la date courrante est comprise entre la date d'arrivée et la date de départ
 
+		f=open("registred_guests",'a')
 		if dateA <= today and today <= dateD :
 			counter+=1
-			nom='Guest'+str(counter)
+			nom=uuid.uuid4()
+
 			# On met à jour l'historique des visites
-			os.system('echo '+str(nom)+' Nom :  '+str(record['Nom de l’invité'])+' '+str(record['Adresse Mac'])+' Arrivée : '+str(record['Date d’arrivée'])+' Départ : '+str(record['Date de départ'])+' >> registred_guests')
+
+			if (not record['Nom de l’invité'] in RegContent):
+				content=(str(nom)+' Nom :  '+str(record['Nom de l’invité'])+' '+str(record['Adresse Mac'])+' Arrivée : '+str(record['Date d’arrivée'])+' Départ : '+str(record['Date de départ'])+"\n")
+				f.write(content)
 			if(record['Adresse Mac']=='')or(nom == ''):
 				print("Ligne ignorée");
 			else:
@@ -137,7 +245,15 @@ for record in records:
 					else:
 						print ("Ajout de %s (mac %s) non trouvé dans le vlan %d"%(nom, mac, id))
 						ip=re.sub(r'(\.1$)', "."+str(lastIP[id]), info["gateway"])
-						lastIP[id]=lastIP[id]+1
+						# print(ip)
+						if lastIP[id] < 255 :
+							lastIP[id]=lastIP[id]+1
+							if BreakFlag:
+								BreakFlag+=1
+						else:
+							lastIP[id]=2
+							BreakFlag+=1
+
 					info["content"]=info["content"]+"""
 		host %s {
 		    hardware ethernet %s;
@@ -149,14 +265,12 @@ for record in records:
 		    option subnet-mask %s;
 		    option host-name "%s";
 		} """ % (nom, mac,ip, info['gateway'], info['gateway'], dns, info['subdomain'],info['netmask'],nom)
-					if (len(nom)>7):
-						info["dns"]=info["dns"]+"%s\tIN\tA\t%s\n"%(nom, ip)
-					else:
-						info["dns"]=info["dns"]+"%s\t\tIN\tA\t%s\n"%(nom, ip)
+					info["dns"]=info["dns"]+"%s\t\tIN\tA\t%s\n"%(nom, ip)
 					numbers=ip.split('.')
 					info["rev"]=info["rev"]+"%d\tIN\tPTR\t%s.%s.\n"%(int(numbers[3]),nom,info["subdomain"])
 				else:
 					print("Vlan %s non trouvé" % (vlan))
+			f.close()
 
 # On écrit les informations dans le fichier dhcpd-519.conf (le serveur DHCP Guest)
 
@@ -170,43 +284,13 @@ if info['content']!="":
     fvlan.write("\n}\n");
     fvlan.close();
     arpa=re.sub(r'([0-9]+)[.]([0-9]+)[.]([0-9]+)[.]0',r'\3.\2.\1', info["subnet"])
-    fhost=open("%d.host"%(info["id"]),"w")
     now = datetime.datetime.now() # current date and time
     serial = now.strftime("%Y%m%d00")
 
-    # On écrit le fichier host
+# On vérifie la duplication d'IP et on met a jour le fichier de configuration DHCP associé
 
-    fhost.write("""$TTL 43200
-@               IN      SOA     dhcpd.srv-prive.icgm.fr.  Fabrice\.Boyrie.icgm.fr. (
-                    %s ; serial
-                    43200 ; refresh
-                    3600 ; retry
-                    3600000 ; expire
-                    604800 ; default_ttl
-                    )
-;
-;
-@               IN      NS    dhcpd.srv-prive.icgm.fr.
-_vlmcs._tcp     IN      SRV   0 0 1688  snkms.unistra.fr. 
-"""%(serial))
-    fhost.write(info["dns"])
-    fhost.close()
+FalseIP=TreatConf()
+print(FalseIP)
+ReadAndWrite(len(FalseIP)-1)
 
-    # On écrit le fichier rev
-
-    frev=open("%d.rev"%(info["id"]),"w")
-    frev.write("""$TTL 43200
-@               IN      SOA     dhcpd.srv-prive.icgm.fr.  Fabrice\.Boyrie.icgm.fr. (
-                    %s ; serial
-                    43200 ; refresh
-                    3600 ; retry
-                    3600000 ; expire
-                    604800 ; default_ttl
-                    )
-;
-;
-@               IN      NS    dhcpd.srv-prive.icgm.fr.
-"""%(serial))
-    frev.write(info["rev"])
-    frev.close()
 f1.close()
