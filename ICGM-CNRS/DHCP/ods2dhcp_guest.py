@@ -290,7 +290,6 @@ if info['content']!="":
 # On vérifie la duplication d'IP et on met a jour le fichier de configuration DHCP associé
 
 FalseIP=TreatConf()
-print(FalseIP)
 ReadAndWrite(len(FalseIP)-1)
 
 f1.close()
