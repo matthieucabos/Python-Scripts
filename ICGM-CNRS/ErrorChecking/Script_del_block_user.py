@@ -69,7 +69,7 @@ for Cisco in Gb_dict.keys():
 			if item != None:
 				command=['interface GigabitEthernet'+str(item),'shutdown','no shutdown']
 				ssh_session.send_config_set(command)
-		ssh_session.send_command("exit\n",expect_string=r"#")
+		ssh_session.send_command("exit\n")
 		ssh_session.disconnect()
 
 #Reomving temporary files
