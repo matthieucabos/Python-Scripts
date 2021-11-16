@@ -106,6 +106,28 @@ def ReadAndWrite(Times):
 	f.close()
 	f=open('dhcpd-519.conf','w')
 	f.write(NewContent)
+	f.close()
+
+def Get_names():
+
+	# Lecture du fichier de configuration DHCP et mise en mémoire des noms deja repertoriés
+
+	dic={}
+	name_list=[]
+	ind=0
+	regex=r'^host.*$'
+	regexMAC=r'([0-9a-f]*:){5}[0-9a-f]{2}'
+	f=open('dhcpd-519.conf','r')
+	Content=f.read()
+	matches = re .finditer(regex, Content, re.MULTILINE)
+	MACmatches=re.finditer(regexMAC, Content, re.MULTILINE)
+	for matchNum, match in enumerate(matches, start=1):
+		name_list.append((match.group()[5:-2]))
+	for matchNum, match in enumerate(MACmatches, start=1):
+		dic[str(match.group())]=name_list[ind]
+		ind+=1
+	return(dic)
+
 
 # Initialisation du vlan Guest
 
@@ -131,7 +153,8 @@ macRegex=r"([0-9a-z]+:){5}[0-9a-z]+"
 ipRegex=r"fixed-address (10.14.[0-9.]+)"
 registred={}
 lastIP={}
-
+Name_Dict={}
+Name_Dict=Get_names()
 os.system('rm dhcpd-519.conf')
 
 # On parcourt le fichier conf du vlan 519
@@ -226,7 +249,10 @@ for record in records:
 		f=open("registred_guests",'a')
 		if dateA <= today and today <= dateD :
 			counter+=1
-			nom=uuid.uuid4()
+			if not record['Adresse Mac'] in list(Name_Dict.keys()):
+				nom=uuid.uuid4()
+			else:
+				nom=Name_Dict[record['Adresse Mac']]
 
 			# On met à jour l'historique des visites
 
