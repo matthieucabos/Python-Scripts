@@ -53,8 +53,6 @@ The algorithm is ruled by the following steps :
 * **Either the computer is already known and we keep its IP**: *If the mac: ip association exists and is valid, it is kept*
 * **Either we add one**: *Otherwise we create a new association*
 * **We write the information in the dhcpd-519.conf file (the DHCP Guest server)**: *We write all the DHCP fields in the configuration file*
-* **We write the host file**: *We write the host file associated with the configuration*
-* **We write the rev file**: *We write the rev file associated with the configuration*
 
 
 Please to use with the correct syntax and associated files as below :
