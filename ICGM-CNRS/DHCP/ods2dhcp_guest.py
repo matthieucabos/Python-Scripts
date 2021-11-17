@@ -115,7 +115,7 @@ def Get_names():
 	dic={}
 	name_list=[]
 	ind=0
-	regex=r'^host.*$'
+	regex=r'host[^"\n]*$'
 	regexMAC=r'([0-9a-f]*:){5}[0-9a-f]{2}'
 	f=open('dhcpd-519.conf','r')
 	Content=f.read()
@@ -154,9 +154,11 @@ ipRegex=r"fixed-address (10.14.[0-9.]+)"
 registred={}
 lastIP={}
 Name_Dict={}
-Name_Dict=Get_names()
-os.system('rm dhcpd-519.conf')
-
+try:
+	Name_Dict=Get_names()
+	# os.system('rm dhcpd-519.conf')
+except:
+	pass
 # On parcourt le fichier conf du vlan 519
 
 info=vlans['ICGM-GUEST'];
@@ -178,7 +180,6 @@ if os.path.isfile("dhcpd-%d.conf"%(id)):
 				numbers=ip.split('.')
 				if(int(numbers[3])>=lastIP[id]):
 					lastIP[id]=int(numbers[3])+1
-
 
 # On lit le fichier Invites
 
@@ -249,6 +250,7 @@ for record in records:
 		f=open("registred_guests",'a')
 		if dateA <= today and today <= dateD :
 			counter+=1
+
 			if not record['Adresse Mac'] in list(Name_Dict.keys()):
 				nom=uuid.uuid4()
 			else:
@@ -280,6 +282,7 @@ for record in records:
 
 					if(mac in registred.keys()):
 						ip=registred[mac]
+						print(ip)
 
 					#Soit on lui en rajoute une
 
