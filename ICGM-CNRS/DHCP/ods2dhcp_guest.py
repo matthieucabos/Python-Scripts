@@ -89,24 +89,7 @@ def TreatConf():
 			pass
 	return (verify_duplicate(ip))
 
-def ReadAndWrite(Times):
 
-	# Lecture et Mise à jour du fichier de configuration DHCP pour préserver la cohérence de la structure du sous réseau
-
-	NewContent='#vlan: 519 (ICGM-GUEST)\nsubnet 10.14.12.0  netmask 255.255.255.0 {\n'
-	f=open('dhcpd-519.conf','r')
-	Content=f.read()
-	regex=r'host(.*\n){10}'
-	matches=re.finditer(regex, Content, re.MULTILINE)
-	for matchNum, match in enumerate(matches, start=1):
-		if Times<0 :
-			NewContent+=match.group()
-		Times-=1
-	NewContent+='}'
-	f.close()
-	f=open('dhcpd-519.conf','w')
-	f.write(NewContent)
-	f.close()
 
 def Get_names():
 
@@ -179,7 +162,12 @@ if os.path.isfile("dhcpd-%d.conf"%(id)):
 				registred[mac]=ip
 				numbers=ip.split('.')
 				if(int(numbers[3])>=lastIP[id]):
-					lastIP[id]=int(numbers[3])+1
+					if int(numbers[3]) >255 :
+						lastIP[id]=info['init']
+					else:
+						lastIP[id]=int(numbers[3])+1
+				if (lastIP[id]>255):
+					lastIP[id]=info['init']
 
 # On lit le fichier Invites
 
@@ -288,7 +276,6 @@ for record in records:
 					else:
 						count=0
 						print ("Ajout de %s (mac %s) non trouvé dans le vlan %d"%(nom, mac, id))
-						print(lastIP[id])
 						ip=re.sub(r'(\.1$)', "."+str(lastIP[id]), info["gateway"])
 						while ip in list(registred.values()):
 							lastIP[id]=(lastIP[id] +1 ) % 253
@@ -339,11 +326,39 @@ if info['content']!="":
     now = datetime.datetime.now() # current date and time
     serial = now.strftime("%Y%m%d00")
 
+def ReadAndWrite(Duplicate):
+
+	# Lecture et Mise à jour du fichier de configuration DHCP pour préserver la cohérence de la structure du sous réseau
+	for k,v in registred.items():
+		if v == Duplicate :
+			hostname=(Name_Dict[k])
+			break
+
+	regex=r'host '+str(hostname)+'(.*\n){9}.*'
+	regex2=r'host (.*\n){9}.*'
+	to_rem=''
+	NewContent='#vlan: 519 (ICGM-GUEST)\nsubnet 10.14.12.0  netmask 255.255.255.0 {\n'
+	f=open('dhcpd-519.conf','r')
+	Content=f.read()
+	matches=re.finditer(regex, Content, re.MULTILINE)
+	matches2=re.finditer(regex2, Content, re.MULTILINE)
+	for matchNum, match in enumerate(matches, start=1):
+		to_rem=(match.group())
+	for matchNum, match in enumerate(matches2, start=1):
+		if match.group() != to_rem :
+			NewContent+=(match.group())
+	NewContent+='}'
+	f.close()
+	f=open('dhcpd-519.conf','w')
+	f.write(NewContent)
+	f.close()
+
 # On vérifie la duplication d'IP et on met a jour le fichier de configuration DHCP associé
 
 FalseIP=TreatConf()
 try:
-	ReadAndWrite(len(FalseIP)-1)
+	for i in range(len(FalseIP)):
+		ReadAndWrite(FalseIP[i])
 except:
 	pass
 
