@@ -282,15 +282,23 @@ for record in records:
 
 					if(mac in registred.keys()):
 						ip=registred[mac]
-						print(ip)
 
 					#Soit on lui en rajoute une
 
 					else:
+						count=0
 						print ("Ajout de %s (mac %s) non trouvé dans le vlan %d"%(nom, mac, id))
+						print(lastIP[id])
 						ip=re.sub(r'(\.1$)', "."+str(lastIP[id]), info["gateway"])
-						# print(ip)
-						if lastIP[id] < 255 :
+						while ip in list(registred.values()):
+							lastIP[id]=(lastIP[id] +1 ) % 253
+							count+=1
+							if count > 254:
+								lastIP[id]=2
+								ip=re.sub(r'(\.1$)', "."+str(lastIP[id]), info["gateway"])
+								break
+							ip=re.sub(r'(\.1$)', "."+str(lastIP[id]), info["gateway"])
+						if lastIP[id] < 253 :
 							lastIP[id]=lastIP[id]+1
 							if BreakFlag:
 								BreakFlag+=1
