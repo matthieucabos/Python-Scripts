@@ -112,26 +112,29 @@ def Get_names():
 	return(dic)
 
 def ReadAndWrite(Duplicate):
-
+	print(Duplicate)
 	# Lecture et Mise à jour du fichier de configuration DHCP pour préserver la cohérence de la structure du sous réseau
+	hostname=[]
+	Done=[]
+	to_rem=[]
 	for k,v in registred.items():
-		if v == Duplicate :
-			hostname=(Name_Dict[k])
-			break
-
-	regex=r'host '+str(hostname)+'(.*\n){9}.*'
-	regex2=r'host (.*\n){9}.*'
-	to_rem=''
-	NewContent='#vlan: 519 (ICGM-GUEST)\nsubnet 10.14.12.0  netmask 255.255.255.0 {\n'
-	f=open('dhcpd-519.conf','r')
-	Content=f.read()
-	matches=re.finditer(regex, Content, re.MULTILINE)
-	matches2=re.finditer(regex2, Content, re.MULTILINE)
-	for matchNum, match in enumerate(matches, start=1):
-		to_rem=(match.group())
-	for matchNum, match in enumerate(matches2, start=1):
-		if match.group() != to_rem :
-			NewContent+=(match.group())
+		if v in Duplicate and not v in Done:
+			hostname.append(Name_Dict[k])
+			Done.append(v)
+	for host in hostname :
+		regex=r'host '+str(host)+'(.*\n){9}.*'
+		regex2=r'host (.*\n){9}.*'
+		
+		NewContent='#vlan: 519 (ICGM-GUEST)\nsubnet 10.14.12.0  netmask 255.255.255.0 {\n'
+		f=open('dhcpd-519.conf','r')
+		Content=f.read()
+		matches=re.finditer(regex, Content, re.MULTILINE)
+		matches2=re.finditer(regex2, Content, re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			to_rem.append((match.group()))
+		for matchNum, match in enumerate(matches2, start=1):
+			if not match.group() in to_rem :
+				NewContent+=(match.group())
 	NewContent+='}'
 	f.close()
 	f=open('dhcpd-519.conf','w')
@@ -356,8 +359,7 @@ if info['content']!="":
 
 FalseIP=TreatConf()
 try:
-	for i in range(len(FalseIP)):
-		ReadAndWrite(FalseIP[i])
+	ReadAndWrite(FalseIP)
 except:
 	pass
 
