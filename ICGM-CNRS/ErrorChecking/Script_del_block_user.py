@@ -98,7 +98,6 @@ for k,v in Gb_dict.items():
 	Socket_name=v
 	Description=Cisco2Socket(Cisco_name,Socket_name)
 	f.write(str(Description) + '\n')
-	print(str(k)+' : '+str(v))
 f.close()
 
 # Brownsing Cisco list and write & apply associated shell script
