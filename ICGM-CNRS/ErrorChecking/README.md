@@ -31,6 +31,13 @@ Please to use with the following syntax :
 python3 Scrip_del_block_user.py
 ```
 
+The version 2 of the project is usable on the same way and implement Multiprocessing features to optimise the execution time.
+Please to use similary :
+
+```bash
+python3 Scrip_del_block_userv2.py
+```
+
 ## Get_ThresholdExceeded.sh
 
 This script has been written to detect on a Network Monitor all the highThresholdExceeded Errors and get the exact associated Sockets Name
