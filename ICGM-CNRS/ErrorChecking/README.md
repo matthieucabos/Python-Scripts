@@ -22,20 +22,27 @@ The Script_del_block_user search into the full Cisco network all the err-disable
 It works from these steps :
   * **Building Error dictionnary** since the Cisco Comandline : ```bash show interface | i err-disable ``` applied to each of the Cisco Switch
   * **Getting exact Gigait Ethernet Socket** from Error dictionnary and store them into Gb_dict Dictionnary using Regular Expression
-  * **Brownsing Cisco list** and write & apply associated Cisco Commands
+  * **Brownsing Cisco list** and write & apply associated Cisco Commands :
+      * **Command application** : ```bash sh int description | i socket_name```
+      * **Cutting the command output by line**
+      * **For each output line** :
+         * Searching the exact Cisco Socket Description since regular expression
+         * Get the exact Description and store it into the variable *Description*
+      * **Writing the error History** into the **Error_list** file
+      * **Resolving errors** using the associated Cisco Commands Script sent by Secured Shell
 
 
 Please to use with the following syntax :
 
 ```bash
-python3 Scrip_del_block_user.py
+python3 Script_del_block_user.py
 ```
 
 The version 2 of the project is usable on the same way and implement Multiprocessing features to optimise the execution time.
 Please to use similary :
 
 ```bash
-python3 Scrip_del_block_userv2.py
+python3 Script_del_block_userv2.py
 ```
 
 ## Get_ThresholdExceeded.sh
