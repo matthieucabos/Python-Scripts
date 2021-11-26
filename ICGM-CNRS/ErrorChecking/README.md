@@ -46,7 +46,7 @@ python3 Script_del_block_userv2.py
 ```
 
 The version 3 implement a dynamic Processus building protocol using a unique parameter "nb_threads".
-This value define the number of independants processus to treat the full dictionnary, wich is regulary splitted to the rounded divided value.
+This value define the number of independants processus to treat the full dictionnary, wich is regulary splitted into the rounded divided size value.
 Each slice of the dictionnary is treated by his own independant Process (using the Multiprocessing module of Python 3).
 
 Please to use with the correct syntax :
