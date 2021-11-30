@@ -22,7 +22,10 @@ To make it, the algorithm follow these steps below :
 * **Getting the raw IP list informations** : Getting and treating the IP list informations since the ```bash ss -n -t``` command
 * **Getting the raw hostname list Informations** : Getting and treating Port numbers informations since the ```bash ss -n -t -r``` command 
 * **Exit the ssh session and read the Ordinateurs.ods file** : Close the current session with netmiko
-* **Updating the Origin_history file since the newest Informations** : Updating history with the ```bash scp ./Origin_history <user>@origin.srv-prive.icgm.fr``` command
+* **Updating the Origin_history file since the newest Informations** : Updating history with the command 
+```bash 
+scp ./Origin_history <user>@origin.srv-prive.icgm.fr
+```
 
 The result is shown with the following syntax :
 
