@@ -34,7 +34,13 @@ The result is shown with the following syntax :
 ```bash
 <Switch Cisco Name> | <Vlan Number> <MAC_@> <DYNAMIC> <Cisco Socket> | <Hostname> | <Departement> | <Ip_@>
 ```
-Finally written into the Origin_history file into the **origin.srv-prive.icgm.fr** server
+Finally written into the Origin_history file into the **origin.srv-prive.icgm.fr** server.
+
+Please to use this script with the correct syntax :
+
+```bash
+python3 Origin_Users.py
+```
 
 
 ## Script_switch.py
