@@ -13,16 +13,18 @@ ________________________________________________________________________________
 
 This script is used to get a full repertory of connected Users on the [*Origin*](https://fr.wikipedia.org/wiki/Origin_(logiciel)) server of the ICGM laboratory.
 It use the Licence informations to write the proper Connection history file.
+
 To make it, the algorithm follow these steps below :
-* **Initialisation** : Variables definition to store the temporary infos
-* **Getting Users acount informations since the top level** : Using the os.getenv function, I get the ssh needed informations to connect
-* **Connecting an ssh session to the origin.srv-prive.icgm.fr server** : Starting an ssh session with netmiko
-* **Getting users list Informations** : Getting the connected users informations since Origin's jetons
-* **Getting the Port Informations** : Getting the port numbers informations since the ```bash netstat -anp ```
-* **Getting the raw IP list informations** : Getting and treating the IP list informations since the ```bash ss -n -t``` command
-* **Getting the raw hostname list Informations** : Getting and treating Port numbers informations since the ```bash ss -n -t -r``` command 
-* **Exit the ssh session and read the Ordinateurs.ods file** : Close the current session with netmiko
-* **Updating the Origin_history file since the newest Informations** : Updating history with the command 
+* **Initialisation** : *Variables definition to store the temporary infos*
+* **Getting Users acount informations since the top level** : *Using the os.getenv function, I get the ssh needed informations to connect*
+* **Connecting an ssh session to the origin.srv-prive.icgm.fr server** : *Starting an ssh session with netmiko*
+* **Getting users list Informations** : *Getting the connected users informations since Origin's jetons*
+* **Getting the Port Informations** : *Getting the port numbers informations since the* ```bash netstat -anp ```
+* **Getting the raw IP list informations** : *Getting and treating the IP list informations since the* ```bash ss -n -t``` *command*
+* **Getting the raw hostname list Informations** : *Getting and treating Port numbers informations since the* ```bash ss -n -t -r``` *command*
+* **Exit the ssh session and read the Ordinateurs.ods file** : *Close the current session with netmiko*
+* **Updating the Origin_history file since the newest Informations** : *Updating history with the command*
+
 ```bash 
 scp ./Origin_history <user>@origin.srv-prive.icgm.fr
 ```
@@ -30,8 +32,10 @@ scp ./Origin_history <user>@origin.srv-prive.icgm.fr
 The result is shown with the following syntax :
 
 ```bash
-<Switch Cisco Name> <Vlan Number> <MAC_@> <DYNAMIC> <Cisco Socket>
+<Switch Cisco Name> | <Vlan Number> <MAC_@> <DYNAMIC> <Cisco Socket> | <Hostname> | <Departement> | <Ip_@>
 ```
+Finally written into the Origin_history file into the **origin.srv-prive.icgm.fr** server
+
 
 ## Script_switch.py
 
