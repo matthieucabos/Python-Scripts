@@ -42,6 +42,14 @@ Please to use this script with the correct syntax :
 python3 Origin_Users.py
 ```
 
+The script must be used into an equivalent environment structure :
+
+```bash
+.
+├── DHCP
+│   └── Origin_Users.py
+└── Ordinateurs.ods
+```
 
 ## Script_switch.py
 
