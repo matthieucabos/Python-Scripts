@@ -51,7 +51,7 @@ def get_Host_list(Host):
 		res.append(match.group())
 	return list(dict.fromkeys(res))
 
-def Read_ods(path,Host_list):
+def Read_ods(path,Host_list,IP_list):
 
 	# Reading the Ordintaeurs.ods file to get associated MAC_@ & Departement ID
 
@@ -61,14 +61,17 @@ def Read_ods(path,Host_list):
 	mac=''
 	for record in records:
 		if record[0] in Host_list:
+			ind=Host_list.index(record[0])
 			mac=record[1][:2]+record[1][3:5]+'.'+record[1][6:8]+record[1][9:11]+'.'+record[1][12:14]+record[1][15:17]
-			res.append([record[0],mac,record[2]])
+			res.append([record[0],mac,record[2],IP_list[ind]])
 			mac=''
+			ind=0
 	return res
 
 def Treat_Info(Infos):
 
 	# Treat Infos getted since the ods file and the ssh output both. Etablishing a link between the MAC_@ and the Cisco Socket Number
+	
 	IPSwitchs={
 	    'Balard-1C-1': '10.14.0.47',
 	    'Balard-1D-1': '10.14.0.49',
@@ -95,7 +98,6 @@ def Treat_Info(Infos):
 
 	res=[]
 	for cisco in IPSwitchs.keys():
-		print(cisco)
 		out=[]
 		home= os.getenv('HOME')
 		user=os.getenv('USER')
@@ -110,9 +112,8 @@ def Treat_Info(Infos):
 				if info[1] in line:
 					matches=re.finditer(regex, line , re.MULTILINE)
 					for matchNum, match in enumerate(matches, start=1):
-						print(match.group())
 						if match.group() != None :
-							res.append(cisco+' '+line)		
+							res.append('Cisco : '+str(cisco)+' | Vlan / Mac_@ / Cisco Socket : '+str(line)+' | Hostname : '+str(info[0])+' | Department :  '+str(info[2])+' | Ip_@ : '+str(info[3]))		
 					if(len(res)==len(Infos)):
 						return res			
 	return(res)
@@ -163,24 +164,20 @@ if (Real_port > 27000):
 
 	IP=ssh_session.send_command('ss -n -t | grep '+str(Real_port)) # | grep -Po "\K([0-9]*\.){3}[0-9]+" 
 	IP_list=get_IP_list(IP)
-	print(IP_list)
 
 	# Getting the raw hostname list Informations
 
 	Host=ssh_session.send_command('ss -n -t -r | grep '+str(Real_port)+' | cut -d " " -f16 ')
 	Host_list=get_Host_list(Host)
-	print(Host_list)
 
 	# Exit the ssh session and read the Ordinateurs.ods file
 
 	ssh_session.disconnect()
-	Infos=Read_ods('../Ordinateurs.ods',Host_list)
-	print(Infos)
+	Infos=Read_ods('../Ordinateurs.ods',Host_list,IP_list)
 
 	# Updating the Origin_history file since the newest Informations
 
 	to_write=Treat_Info(Infos)
-	print(to_write)
 	try:
 		os.system('scp '+str(user)+'@origin.srv-prive.icgm.fr:/home/mcabos/Origin_history .')
 	except:
