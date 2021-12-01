@@ -169,6 +169,45 @@ def get_Description(Data):
 		tmp=""
 	return res
 
+def get_time(Data):
+	res=[]
+	tmp=""
+	regex=r'([0-9]{2}\.){3}[0-9]+'
+	regex2=r'timestamp : [0-9]*\.[0-9]*'
+	ip=""
+	ip2=""
+	timestamp=0.0
+	timestamp2=0.0
+	duration=0.0
+
+	for i in range(len(Data)):
+		matches=re.finditer(regex,Data[i],re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			ip=match.group()
+		matches=re.finditer(regex2,Data[i],re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			timestamp=float(match.group()[12:])
+
+		for j in range(i,len(Data)):
+			matches=re.finditer(regex,Data[j],re.MULTILINE)
+			for matchNum, match in enumerate(matches, start=1):
+				ip2=match.group()
+			if ip == ip2:
+				matches=re.finditer(regex2, Data[j], re.MULTILINE)
+				for matchNum, match in enumerate(matches, start=1):
+					timestamp2=float(match.group()[12:])
+				print(timestamp)
+				print(timestamp2)
+				duration=timestamp2-timestamp
+			else:
+				break
+		print(duration)
+		if duration:
+			res.append(Data[i]+' | Duration : '+str(duration/60)+' m')
+		else:
+			res.append(Data[i]+' | Duration : finished')
+	return res
+
 # Initialisation
 
 User_list=""
@@ -222,6 +261,9 @@ try:
 
 		to_write=Treat_Info(Infos)
 		to_write=get_Description(to_write)
+		# to_write=get_time(to_write)
+
+
 		try:
 			os.system('scp '+str(user)+'@origin.srv-prive.icgm.fr:/home/mcabos/Origin_history .')
 		except:
