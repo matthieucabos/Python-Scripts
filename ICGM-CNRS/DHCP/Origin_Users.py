@@ -3,9 +3,35 @@ import sys
 import re
 import netmiko
 import pyexcel as p
+from datetime import date
+import time
 
 __author__="CABOS Matthieu"
 __date__=29/11/2021
+
+IPSwitchs={
+    'Balard-1C-1': '10.14.0.47',
+    'Balard-1D-1': '10.14.0.49',
+    'Balard-1G-1': '10.14.0.51',
+    'Balard-1H-1': '10.14.0.54',
+    'Balard-2C-1': '10.14.0.56',
+    'Balard-2D-1': '10.14.0.58',
+    'Balard-2G-1': '10.14.0.60',
+    'Balard-2H-1': '10.14.0.62',
+    'Balard-2H-2': '10.14.0.63',
+    'Balard-3C-1': '10.14.0.65',
+    'Balard-3D-1': '10.14.0.67',
+    'Balard-3G-1': '10.14.0.69',
+    'Balard-3G-2': '10.14.0.70',
+    'Balard-3H-1': '10.14.0.72',
+    'Balard-4C-1': '10.14.0.74',
+    'Balard-4D-1': '10.14.0.76',
+    'Balard-4G-1': '10.14.0.78',
+    'Balard-4H-1': '10.14.0.80',
+    'Balard-EP-1': '10.14.0.40',
+    'Balard-PAC-1': '10.14.0.42',
+    'Balard-PAC-2': '10.14.0.43'
+    }
 
 def get_Port(output):
 
@@ -72,29 +98,7 @@ def Treat_Info(Infos):
 
 	# Treat Infos getted since the ods file and the ssh output both. Etablishing a link between the MAC_@ and the Cisco Socket Number
 	
-	IPSwitchs={
-	    'Balard-1C-1': '10.14.0.47',
-	    'Balard-1D-1': '10.14.0.49',
-	    'Balard-1G-1': '10.14.0.51',
-	    'Balard-1H-1': '10.14.0.54',
-	    'Balard-2C-1': '10.14.0.56',
-	    'Balard-2D-1': '10.14.0.58',
-	    'Balard-2G-1': '10.14.0.60',
-	    'Balard-2H-1': '10.14.0.62',
-	    'Balard-2H-2': '10.14.0.63',
-	    'Balard-3C-1': '10.14.0.65',
-	    'Balard-3D-1': '10.14.0.67',
-	    'Balard-3G-1': '10.14.0.69',
-	    'Balard-3G-2': '10.14.0.70',
-	    'Balard-3H-1': '10.14.0.72',
-	    'Balard-4C-1': '10.14.0.74',
-	    'Balard-4D-1': '10.14.0.76',
-	    'Balard-4G-1': '10.14.0.78',
-	    'Balard-4H-1': '10.14.0.80',
-	    'Balard-EP-1': '10.14.0.40',
-	    'Balard-PAC-1': '10.14.0.42',
-	    'Balard-PAC-2': '10.14.0.43'
-	    }
+
 
 	res=[]
 	for cisco in IPSwitchs.keys():
@@ -128,6 +132,43 @@ def Write_in_file(to_write,path):
 		f.write('\n')
 	f.close()
 
+def get_Description(Data):
+
+	# Updating Socket Description field and add a timestamp to the Information.
+
+	regex=r'Gi([0-9]\/){2}[0-9]+'
+	regex2=r'[NRJPASEP]+[0-9]+[A-H][0-9]+-[0-9]+'
+	regex3=r'Balard-[EPACRDGH1234]+-[0-9]'
+	socket=""
+	description=""
+	res=[]
+	tmp=""
+
+	home= os.getenv('HOME')
+	user=os.getenv('USER')
+	keyfile=home+'/.ssh/cisco'
+	for item in Data:
+		now=time.time()
+		matches=re.finditer(regex3,item,re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			cisco=str(match.group())
+		matches=re.finditer(regex,item, re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			socket=str(match.group())
+		ssh_session = netmiko.ConnectHandler(device_type='cisco_ios', ip=IPSwitchs[cisco],username=user, use_keys=True, key_file=keyfile)
+		output=ssh_session.send_command('show interface gigabitethernet '+str(socket[2:]))
+		matches=re.finditer(regex2, output, re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			description=str(match.group())
+		tmp=item+' | Socket Description : '+description+' | timestamp : '+str(now)
+		res.append(tmp)
+		ssh_session.disconnect()
+		cisco=""
+		socket=""
+		description=""
+		tmp=""
+	return res
+
 # Initialisation
 
 User_list=""
@@ -139,53 +180,58 @@ Host_list=[]
 Infos=[]
 to_write=[]
 
-# Getting Users acount informations since the top level
+try:
 
-home= os.getenv('HOME')
-user=os.getenv('USER')
-keyfile=home+'/.ssh/known_hosts'
+	Getting Users acount informations since the top level
 
-# Connecting an ssh session to the origin.srv-prive.icgm.fr server
+	home= os.getenv('HOME')
+	user=os.getenv('USER')
+	keyfile=home+'/.ssh/known_hosts'
 
-ssh_session = netmiko.ConnectHandler(device_type='linux', ip='10.14.14.20', username=user, use_keys=True, key_file=keyfile)
+	# Connecting an ssh session to the origin.srv-prive.icgm.fr server
 
-# Getting raw users list Informations
+	ssh_session = netmiko.ConnectHandler(device_type='linux', ip='10.14.14.20', username=user, use_keys=True, key_file=keyfile)
 
-User_list=ssh_session.send_command('/opt/Linux_FLEXnet_Server_ver_11.16.5.1/lmutil  lmstat -a -c /opt/Linux_FLEXnet_Server_ver_11.16.5.1/Licenses/Origin_20jetons.lic | grep "^.*origin\.srv-prive\.icgm\.fr/27000.*"')
+	# Getting raw users list Informations
 
-# Getting the Port Informations
+	User_list=ssh_session.send_command('/opt/Linux_FLEXnet_Server_ver_11.16.5.1/lmutil  lmstat -a -c /opt/Linux_FLEXnet_Server_ver_11.16.5.1/Licenses/Origin_20jetons.lic | grep "^.*origin\.srv-prive\.icgm\.fr/27000.*"')
 
-Nb_Port = ssh_session.send_command('netstat -anp | grep ":::*" | grep LISTEN')
-Real_port=get_Port(Nb_Port)
+	# Getting the Port Informations
 
-if (Real_port > 27000):
+	Nb_Port = ssh_session.send_command('netstat -anp | grep ":::*" | grep LISTEN')
+	Real_port=get_Port(Nb_Port)
 
-	# Getting the raw IP list informations
+	if (Real_port > 27000):
 
-	IP=ssh_session.send_command('ss -n -t | grep '+str(Real_port)) # | grep -Po "\K([0-9]*\.){3}[0-9]+" 
-	IP_list=get_IP_list(IP)
+		# Getting the raw IP list informations
 
-	# Getting the raw hostname list Informations
+		IP=ssh_session.send_command('ss -n -t | grep '+str(Real_port)) # | grep -Po "\K([0-9]*\.){3}[0-9]+" 
+		IP_list=get_IP_list(IP)
 
-	Host=ssh_session.send_command('ss -n -t -r | grep '+str(Real_port)+' | cut -d " " -f16 ')
-	Host_list=get_Host_list(Host)
+		# Getting the raw hostname list Informations
 
-	# Exit the ssh session and read the Ordinateurs.ods file
+		Host=ssh_session.send_command('ss -n -t -r | grep '+str(Real_port)+' | cut -d " " -f16 ')
+		Host_list=get_Host_list(Host)
 
-	ssh_session.disconnect()
-	Infos=Read_ods('../Ordinateurs.ods',Host_list,IP_list)
+		# Exit the ssh session and read the Ordinateurs.ods file
 
-	# Updating the Origin_history file since the newest Informations
+		ssh_session.disconnect()
+		Infos=Read_ods('../Ordinateurs.ods',Host_list,IP_list)
 
-	to_write=Treat_Info(Infos)
-	try:
-		os.system('scp '+str(user)+'@origin.srv-prive.icgm.fr:/home/mcabos/Origin_history .')
-	except:
-		pass
-	Write_in_file(to_write,'./Origin_history')
-	os.system('scp ./Origin_history '+str(user)+'@origin.srv-prive.icgm.fr:/home/mcabos/')
-	quit()
+		Updating the Origin_history file since the newest Informations
 
-else:
+		to_write=Treat_Info(Infos)
+		print(to_write)
+		to_write=get_Description(to_write)
+		print(to_write)
+		try:
+			os.system('scp '+str(user)+'@origin.srv-prive.icgm.fr:/home/mcabos/Origin_history .')
+		except:
+			pass
+		Write_in_file(to_write,'./Origin_history')
+		os.system('scp ./Origin_history '+str(user)+'@origin.srv-prive.icgm.fr:/home/mcabos/')
+		quit()
+
+except:
 	print("No users connected")
 	quit()
