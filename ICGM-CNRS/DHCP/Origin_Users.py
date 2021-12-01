@@ -182,7 +182,7 @@ to_write=[]
 
 try:
 
-	Getting Users acount informations since the top level
+	# Getting Users acount informations since the top level
 
 	home= os.getenv('HOME')
 	user=os.getenv('USER')
@@ -218,12 +218,10 @@ try:
 		ssh_session.disconnect()
 		Infos=Read_ods('../Ordinateurs.ods',Host_list,IP_list)
 
-		Updating the Origin_history file since the newest Informations
+		# Updating the Origin_history file since the newest Informations
 
 		to_write=Treat_Info(Infos)
-		print(to_write)
 		to_write=get_Description(to_write)
-		print(to_write)
 		try:
 			os.system('scp '+str(user)+'@origin.srv-prive.icgm.fr:/home/mcabos/Origin_history .')
 		except:
