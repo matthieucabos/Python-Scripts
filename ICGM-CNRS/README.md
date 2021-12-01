@@ -18,7 +18,9 @@ You can see three main parts of my work :
  * **[*Mapping*](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/Mapping)** : This Folder contain Mapping tools to get an Excel file containing all the network informations, These Script are parametered by Switch Ip adress or name most of time.
   * **[*SNMP*](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/SNMP)** : This Folder contain all the SNMP Administration tools. The SNMP is a security Protocol for network. You can get immediate Hardware Informations and use it in Open NMS to get beautiful curves.
 
-All these Scripts have been wrote by myself, some of theme are associated to a Shell Script. Must be used on a Linux OS or similar.
+All these Scripts have been written by myself, some of theme are associated to a Shell Script. Must be used on a Linux OS or similar with a corresponding network structure.
+The structure of the network is essentially rules by the ssh dictionnaries, the structure of ods files and the Socket Description Convention. 
+Update them will allow to use these script with an other network.
 
 ## Support
 
