@@ -170,6 +170,9 @@ def get_Description(Data):
 	return res
 
 def get_time(Data):
+
+	# Getting exact time duration since already recorded timestamp (Work In Progress, please do not use)
+
 	res=[]
 	tmp=""
 	regex=r'([0-9]{2}\.){3}[0-9]+'
@@ -262,7 +265,6 @@ try:
 		to_write=Treat_Info(Infos)
 		to_write=get_Description(to_write)
 		# to_write=get_time(to_write)
-
 
 		try:
 			os.system('scp '+str(user)+'@origin.srv-prive.icgm.fr:/home/mcabos/Origin_history .')
