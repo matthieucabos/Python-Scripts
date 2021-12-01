@@ -127,7 +127,7 @@ switch(my_value_to_switch,
 case_1,Value_1,
 case_2,Value_2,
 case_3,Value_3,
-case_4,Value_4
+case_4,Value_4)
 ```
 
 Where Value is the associated action to the case_n value stored in my_value variable.
