@@ -3,7 +3,7 @@ import sys
 import re
 import netmiko
 import pyexcel as p
-from datetime import date
+import datetime as d
 import time
 
 __author__="CABOS Matthieu"
@@ -117,7 +117,7 @@ def Treat_Info(Infos):
 					matches=re.finditer(regex, line , re.MULTILINE)
 					for matchNum, match in enumerate(matches, start=1):
 						if match.group() != None :
-							res.append('Cisco : '+str(cisco)+' | Vlan / Mac_@ / Cisco Socket : '+str(line)+' | Hostname : '+str(info[0])+' | Department :  '+str(info[2])+' | Ip_@ : '+str(info[3]))		
+							res.append('Cisco : '+str(cisco)+' | Vlan / Mac_@ / Cisco Socket : '+str(line[:22])+str(line[36:])+' | Hostname : '+str(info[0])+' | Department :  '+str(info[2])+' | Ip_@ : '+str(info[3]))		
 					if(len(res)==len(Infos)):
 						return res			
 	return(res)
@@ -137,7 +137,7 @@ def get_Description(Data):
 	# Updating Socket Description field and add a timestamp to the Information.
 
 	regex=r'Gi([0-9]\/){2}[0-9]+'
-	regex2=r'[NRJPASEP]+[0-9]+[A-H][0-9]+-[0-9]+'
+	regex2=r'[NRJPASEP]+[0-9]+[A-K][0-9]+-[0-9]+'
 	regex3=r'Balard-[EPACRDGH1234]+-[0-9]'
 	socket=""
 	description=""
@@ -148,7 +148,6 @@ def get_Description(Data):
 	user=os.getenv('USER')
 	keyfile=home+'/.ssh/cisco'
 	for item in Data:
-		now=time.time()
 		matches=re.finditer(regex3,item,re.MULTILINE)
 		for matchNum, match in enumerate(matches, start=1):
 			cisco=str(match.group())
@@ -160,7 +159,7 @@ def get_Description(Data):
 		matches=re.finditer(regex2, output, re.MULTILINE)
 		for matchNum, match in enumerate(matches, start=1):
 			description=str(match.group())
-		tmp=item+' | Socket Description : '+description+' | timestamp : '+str(now)
+		tmp=item+' | Socket Description : '+description+''
 		res.append(tmp)
 		ssh_session.disconnect()
 		cisco=""
@@ -169,7 +168,13 @@ def get_Description(Data):
 		tmp=""
 	return res
 
-def get_time(Data):
+def reverse(liste):
+	res=[]
+	for i in range(len(liste)-1,-1,-1):
+		res.append(liste[i])
+	return res
+
+def get_time(Data,User_list):
 
 	# Getting exact time duration since already recorded timestamp (Work In Progress, please do not use)
 
@@ -182,38 +187,68 @@ def get_time(Data):
 	timestamp=0.0
 	timestamp2=0.0
 	duration=0.0
+	ip_flag=False
+	Duration_dic={}
+	values=list(User_list.values())
+	keys=list(User_list.keys())
+	index=len(values)-1
 
 	for i in range(len(Data)):
 		matches=re.finditer(regex,Data[i],re.MULTILINE)
 		for matchNum, match in enumerate(matches, start=1):
 			ip=match.group()
-		matches=re.finditer(regex2,Data[i],re.MULTILINE)
-		for matchNum, match in enumerate(matches, start=1):
-			timestamp=float(match.group()[12:])
+		timestamp=values[index]
+		timestamp2=now=time.time()
+		duration=timestamp2-timestamp
+		Duration_dic[ip]=duration
+		index-=1
 
-		for j in range(i,len(Data)):
-			matches=re.finditer(regex,Data[j],re.MULTILINE)
-			for matchNum, match in enumerate(matches, start=1):
-				ip2=match.group()
-			if ip == ip2:
-				matches=re.finditer(regex2, Data[j], re.MULTILINE)
-				for matchNum, match in enumerate(matches, start=1):
-					timestamp2=float(match.group()[12:])
-				print(timestamp)
-				print(timestamp2)
-				duration=timestamp2-timestamp
-			else:
-				break
-		print(duration)
-		if duration:
-			res.append(Data[i]+' | Duration : '+str(duration/60)+' m')
+	for i in range(len(Data)-1,-1,-1):
+		matches=re.finditer(regex,Data[i],re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			ip=match.group()
+		if ip in list(Duration_dic.keys()):
+			res.append(Data[i]+' | Duration : '+str(Duration_dic[ip]/60)+' m')
+			del Duration_dic[ip]
 		else:
-			res.append(Data[i]+' | Duration : finished')
-	return res
+			res.append(Data[i]+' | Duration : start')
+	return reverse(res)
+
+def treat_Users(Users):
+	Jeton_dic={}
+	regex=r'[0-9]+\/+'
+	regex2=r'[^a-z]\/[0-9]+'
+	regex3=r'[0-9]+\:'
+	regex4=r'\:[0-9]+'
+	regex5=r'^\s*[^:\s]+'
+	User_dic={}
+	User_list=Users.split('\n')
+	user=''
+
+	for item in User_list:
+		matches=re.finditer(regex,item,re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			month=int(match.group()[:-1])
+		matches=re.finditer(regex2,item,re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			day=int(match.group()[2:])
+		matches=re.finditer(regex3,item,re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			hour=int(match.group()[:-1])
+		matches=re.finditer(regex4,item,re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			minuts=int(match.group()[1:])
+		matches=re.finditer(regex5,item,re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			user=match.group()
+		date=d.datetime(2021,month,day,hour,minuts)
+		User_dic[user]=time.mktime(date.timetuple())
+	return User_dic
+
 
 # Initialisation
 
-User_list=""
+User_list={}
 IP=""
 Nb_Port=""
 Host=""
@@ -236,7 +271,8 @@ try:
 
 	# Getting raw users list Informations
 
-	User_list=ssh_session.send_command('/opt/Linux_FLEXnet_Server_ver_11.16.5.1/lmutil  lmstat -a -c /opt/Linux_FLEXnet_Server_ver_11.16.5.1/Licenses/Origin_20jetons.lic | grep "^.*origin\.srv-prive\.icgm\.fr/27000.*"')
+	Users=ssh_session.send_command('/opt/Linux_FLEXnet_Server_ver_11.16.5.1/lmutil  lmstat -a -c /opt/Linux_FLEXnet_Server_ver_11.16.5.1/Licenses/Origin_20jetons.lic | grep "^.*origin\.srv-prive\.icgm\.fr/27000.*"')
+	User_list=treat_Users(Users)
 
 	# Getting the Port Informations
 
@@ -264,7 +300,9 @@ try:
 
 		to_write=Treat_Info(Infos)
 		to_write=get_Description(to_write)
-		# to_write=get_time(to_write)
+		to_write=get_time(to_write,User_list)
+		for item in to_write:
+			print(item)
 
 		try:
 			os.system('scp '+str(user)+'@origin.srv-prive.icgm.fr:/home/mcabos/Origin_history .')
