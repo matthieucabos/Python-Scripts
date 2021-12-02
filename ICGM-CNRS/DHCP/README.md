@@ -32,7 +32,7 @@ scp ./Origin_history <user>@origin.srv-prive.icgm.fr
 The result is shown with the following syntax :
 
 ```bash
-<Switch Cisco Name> | <Vlan Number> <MAC_@> <DYNAMIC> <Cisco Socket> | <Hostname> | <Departement> | <Ip_@> | <Socket Description> | <Timestamp>
+<Switch Cisco Name> | <Vlan Number> <MAC_@> <Cisco Socket> | <Hostname> | <Departement> | <Ip_@> | <Socket Description> | <Duration>
 ```
 Finally written into the Origin_history file into the **origin.srv-prive.icgm.fr** server.
 
