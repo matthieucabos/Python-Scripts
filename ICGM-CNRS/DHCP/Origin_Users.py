@@ -215,6 +215,9 @@ def get_time(Data,User_list):
 	return reverse(res)
 
 def treat_Users(Users):
+
+	# Managing Jetons allocation (Time Elapsed since the first Jeton)
+
 	Jeton_dic={}
 	regex=r'[0-9]+\/+'
 	regex2=r'[^a-z]\/[0-9]+'
