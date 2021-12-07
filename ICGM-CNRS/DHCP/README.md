@@ -11,6 +11,8 @@ ________________________________________________________________________________
 
 ## Origin_Users.py
 
+### From Version 1
+
 This script is used to get a full repertory of connected Users on the [*Origin*](https://fr.wikipedia.org/wiki/Origin_(logiciel)) server of the ICGM laboratory.
 It use the Licence informations to write the proper Connection history file.
 
