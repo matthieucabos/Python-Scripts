@@ -5,8 +5,7 @@ import netmiko
 import pyexcel as p
 import datetime as d
 import time
-from multiprocessing import Process
-import multiprocessing as mp
+
 __author__="CABOS Matthieu"
 __date__=29/11/2021
 
@@ -210,7 +209,7 @@ def get_time(Data,User_list):
 	keys=list(User_list.keys())
 	index=len(values)-1
 
-	for i in range(len(Data)):
+	for i in range(len(Data)-1,-1,-1):
 		matches=re.finditer(regex,Data[i],re.MULTILINE)
 		for matchNum, match in enumerate(matches, start=1):
 			ip=match.group()
@@ -285,7 +284,162 @@ def cut_dic(Cisco_Dic,div):
 		res[-1].update(tmp)
 	return res
 
-def Update_history(List_Dic):
+def read_log(path):
+
+	# Read the log file
+
+	regex=r'[a-z]+([^a-z]+.*[0-9]*\n)+'
+	match_list=[]
+	tmp=[]
+	res=[]
+	f=open(path)
+	Content=f.read()
+	matches=re.finditer(regex, Content, re.MULTILINE)
+	for matchNum, match in enumerate(matches, start=1):
+		match_list.append(str(match.group()))
+	for match in match_list:
+		tmp=match.split('\n')
+		res.append(tmp)
+		tmp=[]
+
+	return res
+
+def Treat_log(match_list):
+
+	# Treat Log file content since regular expression to get 
+	# * IP_@ list
+	# * New user information
+
+	regex=r'([0-9]+\.)+[0-9]+'
+	regex2=r'[A-Za-zëùî]+\@'
+	banned=['10.14.14.20']
+	tmp=[]
+	user=''
+	User_list={}
+	Dic_flag=True
+	index=0
+
+	for item in match_list:
+		for line in item:
+
+			matches=re.finditer(regex, line, re.MULTILINE)
+			matches2=re.finditer(regex2, line, re.MULTILINE)
+			for matchNum, match in enumerate(matches2, start=1):
+				Dic_flag=(match.group()==None)
+				user=match.group()
+			for matchNum, match in enumerate(matches, start=1):
+				if not (match.group() in banned):
+					tmp.append(str(match.group()))
+			if not Dic_flag:
+				User_list[str(user[:-1])+str(index)]=tmp
+				tmp=[]
+				Dic_flag=True
+				index+=1
+	return User_list
+
+def diff_list(l1,l2):
+
+	# Compute difference between 2 lists
+
+	res=[]
+	if(len(l1)>len(l2)):
+		m=l1
+		n=l2
+	else:
+		m=l2
+		n=l1
+	for item in m:
+		if not item in n:
+			res.append(item)
+	return res
+
+def Diff_log(User_dic):
+	
+	# Associate a new user to the difference between 2 log slice
+
+	tmp=[]
+	res={}
+	for k,v in User_dic.items():
+		if not tmp:
+			tmp=v
+		else:
+			diff=diff_list(v,tmp)
+			res[k]=diff
+			tmp=v
+	return res
+
+def Treat_diff(User_dic):
+
+	# Compute the Set Cantor difference by User ID
+
+	res={}
+	regex=r'[A-Za-z0-9ëîù]+'
+	index=0
+
+	for k,v in User_dic.items():
+		matches=re.finditer(regex,k,re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			if index<10 :
+				name=str(match.group())[:-1]
+			elif index >=10 and index<100:
+				name=str(match.group())[:-2]
+			elif index >=100 and index<1000:
+				name=str(match.group())[:-3]
+			index+=1
+		if v :
+			try:
+				res[name].extend(v)
+			except:
+				res[name]=v
+	return res
+
+def get_max(liste):
+
+	# Get the max value of the list
+
+	maxi=0
+	for item in liste:
+		if item >= maxi:
+			maxi=item
+	return liste.index(maxi)
+
+def get_ip(User_dic):
+
+	# Get the real (most susceptible one) IP_@ from user name
+
+	favorite=''
+	ip_id=[]
+	count=[0]*3
+	index=0
+	User_rep={}
+
+	for k,v in User_dic.items():
+		ip_id=list(dict.fromkeys(v))
+		if len(ip_id) > 1 :
+			for ip in ip_id:
+				count[index]=v.count(ip)
+				index+=1
+			favorite=ip_id[get_max(count)]
+			count=[0]*3
+			index=0
+		else:
+			favorite=v[0]
+		User_rep[k]=favorite
+		favorite=''
+	return User_rep		
+
+def get_IP_from_log():
+
+	# DHCP Main Resolution Algorithm
+
+	test=read_log('./logwatch')
+	test2=Treat_log(test)
+	test3=Diff_log(test2)
+	test4=Treat_diff(test3)
+	test5=get_ip(test4)
+	return test5
+
+def Update_history(User_rep):
 
 	# Getting Users acount informations since the top level
 
@@ -301,6 +455,7 @@ def Update_history(List_Dic):
 
 	Users=ssh_session.send_command('/opt/Linux_FLEXnet_Server_ver_11.16.5.1/lmutil  lmstat -a -c /opt/Linux_FLEXnet_Server_ver_11.16.5.1/Licenses/Origin_20jetons.lic | grep "^.*origin\.srv-prive\.icgm\.fr/27000.*"')
 	User_list=treat_Users(Users)
+	# print(User_list)
 
 	# Getting the Port Informations
 
@@ -313,10 +468,12 @@ def Update_history(List_Dic):
 
 		IP=ssh_session.send_command('ss -n -t | grep '+str(Real_port)) # | grep -Po "\K([0-9]*\.){3}[0-9]+" 
 		IP_list=get_IP_list(IP)
+		# print(IP_list)
 		# Getting the raw hostname list Informations
 
 		Host=ssh_session.send_command('ss -n -t -r | grep '+str(Real_port))
 		Host_list=get_Host_list(Host)
+		# print(Host_list)
 
 		# Exit the ssh session and read the Ordinateurs.ods file
 
@@ -348,8 +505,9 @@ IP_list=[]
 Host_list=[]
 Infos=[]
 to_write=[]
-
-List_Dic=[]
+User_rep={}
 Process_List=[]
-Update_history(List_Dic)
+
+User_rep=get_IP_from_log()
+Update_history(User_rep)
 quit()
