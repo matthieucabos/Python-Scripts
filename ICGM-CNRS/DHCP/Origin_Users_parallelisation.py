@@ -70,13 +70,14 @@ def get_Host_list(Host):
 
 	# Getting Host list since the regular expressions using the output stdout from the ssh
 
+	regex=r'[A-Z-]+\.[dsi0-9]+\.icgm.fr:[0-9]*'
 	Host_real=""
 	Host_list=Host.split('\n')
+
 	for item in Host_list:
-		if 'srv-prive' in item[52:]:
-			pass
-		else:
-			Host_real+=item[52:]+'\n'
+		matches=re.finditer(regex,item,re.MULTILINE)
+		for matchNum, match in enumerate(matches,start=1):
+			Host_real+=str(match.group())+'\n'
 	res=[]
 	regex=r'^[a-zA-Z0-9_-]*'
 	matches = re.finditer(regex, Host_real, re.MULTILINE)
@@ -190,44 +191,40 @@ def reverse(liste):
 		res.append(liste[i])
 	return res
 
-def get_time(Data,User_list):
+def get_time(Data,User_rep,User_list):
 
 	# Getting exact time duration since already recorded timestamp (Work In Progress, please do not use)
 
 	res=[]
 	tmp=""
-	regex=r'([0-9]{2}\.){3}[0-9]+'
-	regex2=r'timestamp : [0-9]*\.[0-9]*'
-	ip=""
-	ip2=""
+	tmp_name=''
 	timestamp=0.0
-	timestamp2=0.0
-	duration=0.0
-	ip_flag=False
-	Duration_dic={}
-	values=list(User_list.values())
-	keys=list(User_list.keys())
-	index=len(values)-1
+	regex=r'([0-9]+\.){3}[0-9]+'
+	now=float(time.time())
 
-	for i in range(len(Data)-1,-1,-1):
-		matches=re.finditer(regex,Data[i],re.MULTILINE)
+	for item in Data:
+		tmp_name=''
+		matches=re.finditer(regex, item, re.MULTILINE)
 		for matchNum, match in enumerate(matches, start=1):
-			ip=match.group()
-		timestamp=values[index]
-		timestamp2=now=time.time()
-		duration=timestamp2-timestamp
-		Duration_dic[ip]=duration
-		index-=1
-
-	for i in range(len(Data)-1,-1,-1):
-		matches=re.finditer(regex,Data[i],re.MULTILINE)
-		for matchNum, match in enumerate(matches, start=1):
-			ip=match.group()
-		if ip in list(Duration_dic.keys()):
-			res.append(Data[i]+' | Duration : '+str(Duration_dic[ip]/60)+' m')
-			del Duration_dic[ip]
+			ip=str(match.group())
+		if(ip in list(User_rep.values())):
+			tmp_name=str(list(User_rep.keys())[list(User_rep.values()).index(ip)])
+			for name in list(User_list.keys()):
+				if tmp_name in  name:
+					timestamp=User_list[name]
+					break
+				else:
+					timestamp=0.0
+			if (timestamp != 0.0):
+				tmp=item+' | pseudo = '+str(list(User_rep.keys())[list(User_rep.values()).index(ip)])+' | Time Elapsed = '+str((now-timestamp)/60)+' min'
+				timestamp=0.0
+			else:
+				tmp=item+' | pseudo = '+str(list(User_rep.keys())[list(User_rep.values()).index(ip)])+' | Time Elapsed not avaible'
 		else:
-			res.append(Data[i]+' | Duration : start')
+			tmp=item
+		res.append(tmp)
+		tmp=''
+	
 	return reverse(res)
 
 def treat_Users(Users):
@@ -284,6 +281,32 @@ def cut_dic(Cisco_Dic,div):
 		res[-1].update(tmp)
 	return res
 
+def Cut_log():
+
+	# Cut logfile since the date (today as default)
+
+	try:
+		os.system('scp mcabos@origin.srv-prive.icgm.fr:/tmp/logwatch .')
+	except:
+		pass
+
+	f=open('./logwatch','r')
+	date=os.popen('date').read()
+	Content=f.readlines()
+	Keep_flag=False
+	to_write=[]
+
+	for line in Content:
+		if(date[:13] in line) and not Keep_flag:
+			Keep_flag=True
+		if Keep_flag:
+			to_write.append(line)
+	f.close()
+	f=open('./logwatch','w')
+	for line in to_write:
+		f.write(line)
+	f.close()
+
 def read_log(path):
 
 	# Read the log file
@@ -292,7 +315,7 @@ def read_log(path):
 	match_list=[]
 	tmp=[]
 	res=[]
-	f=open(path)
+	f=open(path,'r')
 	Content=f.read()
 	matches=re.finditer(regex, Content, re.MULTILINE)
 	for matchNum, match in enumerate(matches, start=1):
@@ -301,6 +324,7 @@ def read_log(path):
 		tmp=match.split('\n')
 		res.append(tmp)
 		tmp=[]
+	f.close()
 
 	return res
 
@@ -311,7 +335,7 @@ def Treat_log(match_list):
 	# * New user information
 
 	regex=r'([0-9]+\.)+[0-9]+'
-	regex2=r'[A-Za-zëùî]+\@'
+	regex2=r'[A-Za-zëùî0-9]+\@'
 	banned=['10.14.14.20']
 	tmp=[]
 	user=''
@@ -362,6 +386,7 @@ def Diff_log(User_dic):
 	for k,v in User_dic.items():
 		if not tmp:
 			tmp=v
+			res[k]=[]
 		else:
 			diff=diff_list(v,tmp)
 			res[k]=diff
@@ -377,6 +402,7 @@ def Treat_diff(User_dic):
 	index=0
 
 	for k,v in User_dic.items():
+
 		matches=re.finditer(regex,k,re.MULTILINE)
 		for matchNum, match in enumerate(matches, start=1):
 			if index<10 :
@@ -385,6 +411,8 @@ def Treat_diff(User_dic):
 				name=str(match.group())[:-2]
 			elif index >=100 and index<1000:
 				name=str(match.group())[:-3]
+			elif index >=1000 and index<10000:
+				name=str(match.group())[:-4]
 			index+=1
 		if v :
 			try:
@@ -409,7 +437,7 @@ def get_ip(User_dic):
 
 	favorite=''
 	ip_id=[]
-	count=[0]*3
+	count=[0]*32
 	index=0
 	User_rep={}
 
@@ -420,7 +448,7 @@ def get_ip(User_dic):
 				count[index]=v.count(ip)
 				index+=1
 			favorite=ip_id[get_max(count)]
-			count=[0]*3
+			count=[0]*32
 			index=0
 		else:
 			favorite=v[0]
@@ -461,6 +489,7 @@ def Update_history(User_rep):
 
 	Nb_Port = ssh_session.send_command('netstat -anp | grep ":::*" | grep LISTEN')
 	Real_port=get_Port(Nb_Port)
+	# print(Real_port)
 
 	if (Real_port > 27000):
 
@@ -469,6 +498,7 @@ def Update_history(User_rep):
 		IP=ssh_session.send_command('ss -n -t | grep '+str(Real_port)) # | grep -Po "\K([0-9]*\.){3}[0-9]+" 
 		IP_list=get_IP_list(IP)
 		# print(IP_list)
+
 		# Getting the raw hostname list Informations
 
 		Host=ssh_session.send_command('ss -n -t -r | grep '+str(Real_port))
@@ -484,7 +514,7 @@ def Update_history(User_rep):
 
 		to_write=Treat_Info(Infos,IPSwitchs)
 		to_write=get_Description(to_write)
-		to_write=get_time(to_write,User_list)
+		to_write=get_time(to_write,User_rep,User_list)
 		for item in to_write:
 			print(item)
 
@@ -507,7 +537,8 @@ Infos=[]
 to_write=[]
 User_rep={}
 Process_List=[]
-
+Cut_log()
 User_rep=get_IP_from_log()
 Update_history(User_rep)
+os.system('rm logwatch')
 quit()
