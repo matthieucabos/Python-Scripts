@@ -24,22 +24,54 @@ To make it, the algorithm follow these steps below :
 * **Getting the raw hostname list Informations** : *Getting and treating Port numbers informations since the* ```bash ss -n -t -r``` *command*
 * **Exit the ssh session and read the Ordinateurs.ods file** : *Close the current session with netmiko*
 * **Updating the Origin_history file since the newest Informations** : *Updating history with the command*
-
 ```bash 
 scp ./Origin_history <user>@origin.srv-prive.icgm.fr
 ```
 
+### From Version 2 :
+
+These actions need an efficient log file since the Origin server orglabdebug.log file.
+I use a logwatch intermediate file with allocated token inserted into the token log file.
+It is ruled by automatic script : 
+
+```bash
+date >> /tmp/logwatch
+ss -n -t | grep 60213 >> /tmp/logwatch
+tail -n 1 /usr/local/flexlm/orglabdebug.log >> /tmp/logwatch
+```
+This script is lauched periodically with commands :
+
+```bash
+inotifywait -q -m -e modify /usr/local/flexlm/orglabdebug.log|
+while read -r filename event; do
+ bin/script.sh       
+done
+```
+Once the logwatch file properly instanced, I read it and treat informations since the token allocations.
+The intermediate algorithm is ruled by following steps :
+
+* **Cut logfile** since the date (today as default)
+* **Read** the log file
+* **Treat Log file content** since regular expression to get 
+  * *IP_@ list*
+  * *New user information*
+* **Associate a new user** to the difference between 2 log slice
+* **Compute the Set Cantor difference** by User ID
+* **Get the real (most susceptible one) IP_@** from user name
+
+Once these informations found, there are linked to the already existing database since the IP adress to obtain the exact Elapsed connection time and the exact login name foreach user.
+
 The result is shown with the following syntax :
 
 ```bash
-<Switch Cisco Name> | <Vlan Number> <MAC_@> <Cisco Socket> | <Hostname> | <Departement> | <Ip_@> | <Socket Description> | <Duration>
+<Switch Cisco Name> | <Vlan Number> <MAC_@> <Cisco Socket> | <Hostname> | <Departement> | <Ip_@> | <Socket Description> | <User login> | <Time Elapsed>
 ```
 Finally written into the Origin_history file into the **origin.srv-prive.icgm.fr** server.
 
-Please to use this script with the correct syntax :
+Please to use this script with the correct syntax (and the latest version):
 
 ```bash
-python3 Origin_Users.py
+python3 Origin_Users_parallelisation_v2.py
 ```
 
 The script must be used into an equivalent environment structure :
@@ -49,6 +81,12 @@ The script must be used into an equivalent environment structure :
 ├── DHCP
 │   └── Origin_Users.py
 └── Ordinateurs.ods
+```
+
+Where Ordinateurs.ods is the DHCP authorisation list table with form :
+
+```bash
+<Hostname> | <MAC_@> | <Vlan> | <Relative Informations>
 ```
 
 ## Script_switch.py
