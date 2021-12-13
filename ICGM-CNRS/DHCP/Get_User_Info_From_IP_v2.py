@@ -50,6 +50,7 @@ Vlans={
 
 # IP_list=sys.argv[1]
 
+Time_dict={}
 IP_list=[
 '10.14.23.214',
 '10.14.18.135'
@@ -77,8 +78,6 @@ def cut_dic(Cisco_Dic,div):
 
 List_Dic=[]
 List_Dic=cut_dic(IPSwitchs,21)
-print(List_Dic)
-
 
 def Del_Duplicate(liste):
 	verif=liste[:]
@@ -162,13 +161,13 @@ def Get_Users_Info(IP_list):
 	Process_List=[]
 	for cisco in list(IPSwitchs.keys()):
 		# //
-		print(IPSwitchs[cisco])
-		print(List_Dic[i])
+		# print(IPSwitchs[cisco])
+		# print(List_Dic[i])
 		i+=1
 		try:
 			# HERE !!!
 			Content=ssh_session(cisco,'sh mac address')
-			
+
 		except:
 			print(cisco+' is not avaible at the moment')
 
@@ -192,7 +191,6 @@ def Get_Users_Info(IP_list):
 		# //
 		try:
 			# HERE !!!
-			print(IPSwitchs[v['cisco']])
 			home= os.getenv('HOME')
 			Content=ssh_session(v['cisco'],'sh int gigabitethernet '+v['socket'])
 		except:
@@ -201,7 +199,6 @@ def Get_Users_Info(IP_list):
 		matches=re.finditer(regex_description, Content, re.MULTILINE)
 		for matchNum, match in enumerate(matches, start=1):
 			Users_dict[k]['Description']=match.group()
-			print(match.group())
 	return Users_dict
 
 def Cut_log():
@@ -326,7 +323,11 @@ def Read_and_treat_log(path):
 
 	# 2/ Getting host ID from the full Origin user name (with form name@host) => Allow multiple users sessions on the same host
 
+	TEMP='@'
 	for k,v in find_ip_dict.items():
+		if list(find_ip_dict[k].keys())[0] != TEMP:
+			Time_dict[list(find_ip_dict[k].keys())[0]]=time_dict[k]
+		TEMP=list(find_ip_dict[k].keys())[0]
 		matches=re.finditer(regex_pc, list(v.keys())[0], re.MULTILINE)
 		for matchNum, match in enumerate(matches, start=1):
 			host=match.group()
@@ -349,17 +350,40 @@ def Write_in_file(to_write,path):
 	f=open(path,'a')
 	for k,v in to_write.items():
 		f.write(k)
-		for item in v:
-			f.write(item)
+		f.write(v)
 		f.write('\n')
 	f.close()
 
 # Main Users Informations Finder Algorithm
 
 name_ip_dict={}
-name_ip_dict==Read_and_treat_log('./logwatch')
-print(name_ip_dict)
+name_ip_dict=Read_and_treat_log('./logwatch')
+IP_list=list(name_ip_dict.values())
 Users_dict=Get_Users_Info(IP_list)
+
+home= os.getenv('HOME')
+user=os.getenv('USER')
+keyfile=home+'/.ssh/known_hosts'
+ssh_origin = netmiko.ConnectHandler(device_type='linux', ip='10.14.14.20',username=user, use_keys=True, key_file=keyfile)
+Connected=ssh_origin.send_command('/opt/Linux_FLEXnet_Server_ver_11.16.5.1/lmutil  lmstat -a -c /opt/Linux_FLEXnet_Server_ver_11.16.5.1/Licenses/Origin_20jetons.lic | grep "^.*origin\.srv-prive\.icgm\.fr/27000.*"')
+ssh_origin.disconnect()
+
+for k,v in Users_dict.items():
+	if v['ip'] in list(name_ip_dict.values()):
+		position=list(name_ip_dict.values()).index(v['ip'])
+		Users_dict[k]['origin_name']=list(name_ip_dict.keys())[position]
+	for l,m in Time_dict.items():
+		try:
+			if (v['origin_name'][1:] in l):
+				Users_dict[k]['connexion time']=str(float(time.time())-m)
+				break
+			else:
+				Users_dict[k]['connexion time']='not avaible, start at '+str(m)
+		except:
+			print('Error occured, user is not present into log archive.')
+			break
+	print(k)
+	print(v)
 
 user=os.getenv('USER')
 try:
@@ -368,10 +392,3 @@ except:
 	pass
 Write_in_file(Users_dict,'./Origin_history')
 os.system('scp ./Origin_history '+str(user)+'@origin.srv-prive.icgm.fr:/home/mcabos/')
-
-for k,v in Users_dict.items():
-	if v['ip'] in list(name_ip_dict.values()):
-		position=list(name_ip_dict.values()).index(v['ip'])
-		Users_dict[k]['origin_name']=list(name_ip_dict.keys())[position]
-	print(k)
-	print(v)
