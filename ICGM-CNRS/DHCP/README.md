@@ -24,7 +24,7 @@ Since the two first versions, the optimised version is ruled differently from th
   * **Building DHCP Dictionnary**
   * **Updating Users Dictionnary** since the DHCP dictionnary from the ip correspondance (as key entry of the Users dictionnary)
   * **Updating the Users Dictionnary** since the Cisco output command : ssh <Cisco_name> 'show mac address' to get the associated cisco switch ID and the gigabit ethernet ID
-* **Finnaly write the RAM stored informations dictionnary** into the Origin_history file
+* **Finaly write the RAM stored informations dictionnary** into the Origin_history file
 
 Please to use with the correct syntax :
 
