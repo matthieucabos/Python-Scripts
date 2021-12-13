@@ -4,6 +4,7 @@ import re
 import datetime as dt
 import time
 import netmiko
+from multiprocessing import Process
 
 IPSwitchs={
 'Balard-1C-1': '10.14.0.47',
@@ -50,8 +51,33 @@ Vlans={
 # IP_list=sys.argv[1]
 
 IP_list=[
-'10.14.23.214'
+'10.14.23.214',
+'10.14.18.135'
 ]
+
+def cut_dic(Cisco_Dic,div):
+
+	# Split Dictionnary into div differents dictionnary
+
+	res=[]
+	tmp={}
+	ind=0
+	size=int(round(len(Cisco_Dic)/div))
+
+	for k,v in Cisco_Dic.items():
+		tmp[k]=v
+		ind+=1 
+		if(ind==size):
+			res.append(tmp)
+			tmp={}
+			ind=0
+	if (bool(tmp)):
+		res[-1].update(tmp)
+	return res
+
+List_Dic=[]
+List_Dic=cut_dic(IPSwitchs,21)
+print(List_Dic)
 
 
 def Del_Duplicate(liste):
@@ -61,6 +87,15 @@ def Del_Duplicate(liste):
 		if item in verif:
 			liste.remove(item)
 	return liste
+
+def ssh_session(cisco,command):
+	home= os.getenv('HOME')
+	user=os.getenv('USER')
+	keyfile=home+'/.ssh/cisco'
+	ssh_session = netmiko.ConnectHandler(device_type='cisco_ios', ip=IPSwitchs[cisco],username=user, use_keys=True, key_file=keyfile)
+	Output=ssh_session.send_command(command)
+	ssh_session.disconnect()
+	return Output
 
 def Get_Users_Info(IP_list):
 
@@ -123,15 +158,19 @@ def Get_Users_Info(IP_list):
 
 	# Updating the Users Dictionnary since the Cisco output command : ssh <Cisco_name> 'show mac address' to get the associated cisco switch ID and the gigabit ethernet ID
 
-	home= os.getenv('HOME')
-	user=os.getenv('USER')
-	keyfile=home+'/.ssh/cisco'
+	i=0
+	Process_List=[]
 	for cisco in list(IPSwitchs.keys()):
 		# //
-		# Content=os.popen("ssh "+str(cisco)+" 'sh mac address' ").read()
-		ssh_session = netmiko.ConnectHandler(device_type='cisco_ios', ip=IPSwitchs[cisco],username=user, use_keys=True, key_file=keyfile)
-		Content=ssh_session.send_command('sh mac address')
-		ssh_session.disconnect()
+		print(IPSwitchs[cisco])
+		print(List_Dic[i])
+		i+=1
+		try:
+			# HERE !!!
+			Content=ssh_session(cisco,'sh mac address')
+			
+		except:
+			print(cisco+' is not avaible at the moment')
 
 		ContList=Content.split('\n')
 		for user in Users_dict.keys():
@@ -149,23 +188,20 @@ def Get_Users_Info(IP_list):
 			break
 
 	Content=""
-	home= os.getenv('HOME')
-	user=os.getenv('USER')
-	keyfile=home+'/.ssh/cisco'
 	for k,v in Users_dict.items():
 		# //
 		try:
-			# Content=os.popen("ssh "+v['cisco']+" 'sh int gigabitethernet '"+v['socket']).read()
-			ssh_session = netmiko.ConnectHandler(device_type='cisco_ios', ip=IPSwitchs[v['cisco']],username=user, use_keys=True, key_file=keyfile)
-			Content=ssh_session.send_command('sh int gigabitethernet '+v['socket'])
-			ssh_session.disconnect()
+			# HERE !!!
+			print(IPSwitchs[v['cisco']])
+			home= os.getenv('HOME')
+			Content=ssh_session(v['cisco'],'sh int gigabitethernet '+v['socket'])
 		except:
 			print('Informations missing about user'+str(v))
 
 		matches=re.finditer(regex_description, Content, re.MULTILINE)
 		for matchNum, match in enumerate(matches, start=1):
 			Users_dict[k]['Description']=match.group()
-
+			print(match.group())
 	return Users_dict
 
 def Cut_log():
@@ -311,8 +347,10 @@ def Write_in_file(to_write,path):
 	# Write Infos in file
 
 	f=open(path,'a')
-	for item in to_write:
-		f.write(item)
+	for k,v in to_write.items():
+		f.write(k)
+		for item in v:
+			f.write(item)
 		f.write('\n')
 	f.close()
 
@@ -323,13 +361,14 @@ name_ip_dict==Read_and_treat_log('./logwatch')
 print(name_ip_dict)
 Users_dict=Get_Users_Info(IP_list)
 
+user=os.getenv('USER')
 try:
 	os.system('scp '+str(user)+'@origin.srv-prive.icgm.fr:/home/mcabos/Origin_history .')
 except:
 	pass
-Write_in_file(to_write,'./Origin_history')
+Write_in_file(Users_dict,'./Origin_history')
 os.system('scp ./Origin_history '+str(user)+'@origin.srv-prive.icgm.fr:/home/mcabos/')
-		
+
 for k,v in Users_dict.items():
 	if v['ip'] in list(name_ip_dict.values()):
 		position=list(name_ip_dict.values()).index(v['ip'])
