@@ -9,6 +9,69 @@
 
 ______________________________________________________________________________________________________
 
+## Get_User_Info_From_IP_v2.py
+
+This script is the optimised version of the Origin_Users.py script.
+
+Since the two first versions, the optimised version is ruled differently from the first one :
+* **Cut logfile** since the date (today as default)
+* **Read and extract informations** from the logwatch file
+* **Open, read & Treat the logwatch** file :
+  * **Getting IP list** associated to a timed & named token. The resultys are stored by time order, arbitrary indexed from 1 -> n
+  * **Getting host ID** from the full Origin user name (with form name@host) => Allow multiple users sessions on the same host
+  * **Compute the Cantor difference** between two adjacents set (indexed +- 1) to get the User's associated IP
+* **Building DHCP dictionnary** and get infos since the given IP adresses list as parameter :
+  * **Building DHCP Dictionnary**
+  * **Updating Users Dictionnary** since the DHCP dictionnary from the ip correspondance (as key entry of the Users dictionnary)
+  * **Updating the Users Dictionnary** since the Cisco output command : ssh <Cisco_name> 'show mac address' to get the associated cisco switch ID and the gigabit ethernet ID
+* **Finnaly write the RAM stored informations dictionnary** into the Origin_history file
+
+Please to use with the correct syntax :
+
+```bash
+python3 Get_User_Info_From_IP_v2.py
+```
+
+The script must be used into an equivalent environment structure :
+
+```bash
+.
+├── DHCP
+│   └── Get_User_Info_From_IP_v2.py
+└── dhcpd-vlan_i.conf
+└── dhcpd-vlan_i+1.conf
+.
+.
+.
+└── dhcpd-vlan_n.conf
+```
+
+
+These actions need an efficient log file since the Origin server orglabdebug.log file.
+I use a logwatch intermediate file with allocated token inserted into the token log file.
+It is ruled by automatic script : 
+
+```bash
+date >> /tmp/logwatch
+ss -n -t | grep 60213 >> /tmp/logwatch
+tail -n 1 /usr/local/flexlm/orglabdebug.log >> /tmp/logwatch
+```
+This script is lauched periodically with commands :
+
+```bash
+inotifywait -q -m -e modify /usr/local/flexlm/orglabdebug.log|
+while read -r filename event; do
+ bin/script.sh       
+done
+```
+
+The result is shown with the following syntax :
+
+```bash
+{'mac': '3c52.828b.1c06', 'ip': '10.14.23.214', 'hostname': '"PC-Matthieu"', 'departement': 'SSI', 'vlan': 525, 'cisco': 'Balard-PAC-2', 'socket': '3/0/34', 'description' : 'N2G11-03' }
+```
+Finally written into the Origin_history file into the **origin.srv-prive.icgm.fr** server.
+ 
 ## Origin_Users.py
 
 ### From Version 1
