@@ -349,10 +349,29 @@ def Write_in_file(to_write,path):
 
 	f=open(path,'a')
 	for k,v in to_write.items():
-		f.write(k)
-		f.write(v)
+		f.write(str(k))
+		f.write(str(v))
 		f.write('\n')
 	f.close()
+
+def get_Connected():
+
+	# Get connected user list since the orgin token licence
+
+	home= os.getenv('HOME')
+	user=os.getenv('USER')
+	keyfile=home+'/.ssh/known_hosts'
+	ssh_origin = netmiko.ConnectHandler(device_type='linux', ip='10.14.14.20',username=user, use_keys=True, key_file=keyfile)
+	Connected=ssh_origin.send_command('/opt/Linux_FLEXnet_Server_ver_11.16.5.1/lmutil  lmstat -a -c /opt/Linux_FLEXnet_Server_ver_11.16.5.1/Licenses/Origin_20jetons.lic | grep "^.*origin\.srv-prive\.icgm\.fr/27000.*"').split('\n')
+	ssh_origin.disconnect()
+
+	regex_cnctd=r'[A-Za-z0-9]+\-[A-Za-z0-9]+'
+	for i in range(0,len(Connected)):
+		matches=re.finditer(regex_cnctd, Connected[i], re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			Connected[i]=match.group()
+			break
+	return(Connected)
 
 # Main Users Informations Finder Algorithm
 
@@ -360,21 +379,15 @@ name_ip_dict={}
 name_ip_dict=Read_and_treat_log('./logwatch')
 IP_list=list(name_ip_dict.values())
 Users_dict=Get_Users_Info(IP_list)
-
-home= os.getenv('HOME')
-user=os.getenv('USER')
-keyfile=home+'/.ssh/known_hosts'
-ssh_origin = netmiko.ConnectHandler(device_type='linux', ip='10.14.14.20',username=user, use_keys=True, key_file=keyfile)
-Connected=ssh_origin.send_command('/opt/Linux_FLEXnet_Server_ver_11.16.5.1/lmutil  lmstat -a -c /opt/Linux_FLEXnet_Server_ver_11.16.5.1/Licenses/Origin_20jetons.lic | grep "^.*origin\.srv-prive\.icgm\.fr/27000.*"')
-ssh_origin.disconnect()
+Connected=get_Connected()
 
 for k,v in Users_dict.items():
 	if v['ip'] in list(name_ip_dict.values()):
 		position=list(name_ip_dict.values()).index(v['ip'])
 		Users_dict[k]['origin_name']=list(name_ip_dict.keys())[position]
 	for l,m in Time_dict.items():
-		try:
-			if (v['origin_name'][1:] in l):
+		try:		
+			if (v['origin_name'][1:] in l) and (v['origin_name'][1:].strip() in Connected):
 				Users_dict[k]['connexion time']=str(float(time.time())-m)
 				break
 			else:
