@@ -6,6 +6,13 @@
 
 **Organisation** : *ICGM-CNRS*
 
+______________________________________________________________________________________________________
+
+
+I've been writing these Scripts for the Network Administration and Installation of the ICGM laboratory - CNRS- Montpellier FRANCE.
+
+**Warning** All these script have been written to be executed into the own network structure of the ICGM-IBMM Network. It should be used into a different environnement **respecting the structure in any case** to make them work.
+
 *******************************************
 
 ## Cisco2.sh
@@ -16,7 +23,7 @@
 Please to Use of script Cisco.sh with the following syntax :
 
 ```bash
-	./Cisco.sh <@IP Switch Cisco> <mode>
+./Cisco.sh <@IP Switch Cisco> <mode>
 ```
 
 where :
