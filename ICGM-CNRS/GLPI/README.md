@@ -6,6 +6,12 @@
 
 **Organisation** : *ICGM-CNRS*
 
+______________________________________________________________________________________________________
+
+
+I've been writing these Scripts for the Network Administration and Installation of the ICGM laboratory - CNRS- Montpellier FRANCE.
+
+**Warning** All these script have been written to be executed into the own network structure of the ICGM-IBMM Network. It should be used into a different environnement **respecting the structure in any case** to make them work.
 
 ____________________________________________________________________________
 
