@@ -13,6 +13,25 @@ I've been writing these Scripts for the Network Administration and Installation 
 
 **Warning** All these script have been written to be executed into the own network structure of the ICGM-IBMM Network. It should be used into a different environnement **respecting the structure in any case** to make them work.
 
+______________________________________________________________________________________________________
+
+## Summary
+
+[**Cisco2.sh**](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/SNMP#cisco2sh)
+
+[**Cisco2Socket.py**](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/SNMP#cisco2socketpy)
+
+[**Cisco2Socket2.py**](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/SNMP#cisco2socket2py)
+
+[**Get10GSocket.sh**](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/SNMP#get10gsocketsh)
+
+[**Script_sheduler.sh**](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/SNMP#script_shedulersh)
+
+[**Script_sheduler2.sh**](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/SNMP#script_sheduler2sh)
+
+[**Switch_info_getter.py**](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/SNMP#switch_info_getterpy)
+
+
 *******************************************
 
 ## Cisco2.sh
