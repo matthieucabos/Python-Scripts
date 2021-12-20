@@ -6,13 +6,12 @@
 Content=`cat logwatch`
 day=`date | cut -d " " -f1`
 # echo $day
-day="mar."
+# day="mar."
 month=`date | cut -d " " -f3`
 Slice=""
 Liste=""
 CutFlag=0
 del="(orglab)"
-
 
 for line in $Content
 do
@@ -51,7 +50,7 @@ declare -a IP_list
 
 for item in $Liste2
 do
-	User=`echo $item | grep -Po "\K[A-Za-z0-9_-]+@[A-Za-z0-9_-]+" | rev | cut -c 4- | rev`
+	User=`echo $item | grep -Po "\K[A-Za-z0-9_-]+@[A-Za-z0-9_-]+"`
 	ip=`echo $item | grep -Po "\K([0-9]+\.){3}[0-9]+"`
 	for elem in $ip  
 	do
@@ -74,19 +73,15 @@ User_IP=""
 tmp=""
 for i in ${!IP_list[@]}
 do
-	# echo $i
-	# echo ${IP_list[$i]}
-	# echo "------------------------------------------------------------"
 	if [[ -n "$tmp" ]]
 	then
 		readarray t <<<"$(echo ${IP_list[$i]} $tmp | tr ' ' '\n' | sort | uniq -u)"
-		User=`echo ${IP_list[$i]}| grep -Po "\K[A-Za-z0-9_-]+@[A-Za-z0-9_-]+" | rev | cut -c 4- | rev`
+		User=`echo ${IP_list[$i]}| grep -Po "\K[A-Za-z0-9_-]+@[A-Za-z0-9_-]+"`
 		if ! [[ $User_IP == *$User* ]]
 		then
 			User_IP=$User_IP" "$User":"${t[0]}
 		fi
 	fi
-	# echo "------------------------------------------------------------"
 	tmp=${IP_list[$i]}
 done
-echo $User_IP
+echo $User_IP #| grep -Po "\K[A-Za-z0-9_-êïù]+@[A-Za-z0-9_-]+\:([0-9]+\.){3}[0-9]+"

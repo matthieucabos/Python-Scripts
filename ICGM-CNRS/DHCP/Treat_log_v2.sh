@@ -3,16 +3,15 @@
 # Author : CABOS Matthieu
 # Date : 15/12/2021
 
+scp mcabos@origin.srv-prive.icgm.fr:~/logwatch .
 day=`date | cut -d " " -f1`
 # echo $day
 # day="mar."
 month=`date | cut -d " " -f2`
 num=`date | cut -d " " -f3`
-today="$day $month 15"
-
+today="$day $month $num"
 cut_line=`cat logwatch | grep -n "$today" | head -1 | grep -Po "\K^[0-9]+"`
 Content=`cat logwatch | tail -$cut_line`
-
 Slice=""
 Liste=""
 CutFlag=0
@@ -34,7 +33,6 @@ do
 		Slice=$Slice$line
 	fi
 done
-
 count=0
 Liste2=""
 for item in $Liste
