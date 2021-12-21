@@ -16,7 +16,7 @@ I've been writing these Scripts for the Network Administration and Installation 
 
 ## Summary
 
-[1/ Get_User_Info_From_IP_v2.py](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/DHCP#get_user_info_from_ip_v2py)
+[1/ Get_User_Info_From_IP_v3.py](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/DHCP#get_user_info_from_ip_v2py)
 
 [2/ Origin_Users.py](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/DHCP#origin_userspy)
 
@@ -34,13 +34,13 @@ I've been writing these Scripts for the Network Administration and Installation 
 
 ______________________________________________________________________________________________________
 
-## Get_User_Info_From_IP_v2.py
+## Get_User_Info_From_IP_v3.py
 
 This script is the optimised version of the Origin_Users.py script.
 
 Since the two first versions, the optimised version is ruled differently from the first one :
 * **Cut logfile** since the date (today as default)
-* **Read and extract informations** from the logwatch file
+* **Read and extract informations** from the logwatch file with the associated *Treat_log_v2.sh* Scripot
 * **Open, read & Treat the logwatch** file :
   * **Getting IP list** associated to a timed & named token. The resultys are stored by time order, arbitrary indexed from 1 -> n
   * **Getting host ID** from the full Origin user name (with form name@host) => Allow multiple users sessions on the same host
@@ -54,7 +54,7 @@ Since the two first versions, the optimised version is ruled differently from th
 Please to use with the correct syntax :
 
 ```bash
-python3 Get_User_Info_From_IP_v2.py
+python3 Get_User_Info_From_IP_v3.py
 ```
 
 The script must be used into an equivalent environment structure :
@@ -62,7 +62,7 @@ The script must be used into an equivalent environment structure :
 ```bash
 .
 ├── DHCP
-│   └── Get_User_Info_From_IP_v2.py
+│   └── Get_User_Info_From_IP_v3.py
 └── dhcpd-vlan_i.conf
 └── dhcpd-vlan_i+1.conf
 .
@@ -77,24 +77,41 @@ I use a logwatch intermediate file with allocated token inserted into the token 
 It is ruled by automatic script : 
 
 ```bash
-date >> /tmp/logwatch
-ss -n -t | grep 60213 >> /tmp/logwatch
-tail -n 1 /usr/local/flexlm/orglabdebug.log >> /tmp/logwatch
+date >> ./logwatch
+ss -n -t | grep 60213 >> ./logwatch
+tail -n 1 /usr/local/flexlm/orglabdebug.log >> ./logwatch
 ```
 This script is lauched periodically with commands :
 
 ```bash
 inotifywait -q -m -e modify /usr/local/flexlm/orglabdebug.log|
 while read -r filename event; do
- bin/script.sh       
+ ./Script.sh       
 done
 ```
 
 The result is shown with the following syntax :
 
 ```bash
-{'mac': '3c52.828b.1c06', 'ip': '10.14.23.214', 'hostname': '"PC-Matthieu"', 'departement': 'SSI', 'vlan': 525, 'cisco': 'Balard-PAC-2', 'socket': '3/0/34', 'description' : 'N2G11-03' }
+{'mac': '90b1.1ca3.3575', 'ip': '10.14.18.145', 'hostname': '"BBBAACCC"', 'departement': 'DPT4', 'vlan': 513, 'cisco': 'Balard-PAC-2', 'socket': '1/0/36', 'Description': 'RJLG07-01', 'origin_name': 'c2mstud@c2mstud3-pc', 'connexion time': '198.3088238040606 min'}
 ```
+
+With :
+
+
+| **Field Identifier** | **Data Type**      | **Description**                                                                           |
+|----------------------|--------------------|-------------------------------------------------------------------------------------------|
+| **mac**              | Hexadecimal string | *The full mac address of the current User*                                                |
+| **ip**               | Decimal string     | *The full fixed IP from the origin server*                                                | 
+| **hostname**         | String             | *The Hostname from the DHCP server (could be different from the Origin server Hostname)*  |
+| **departement**      | String             | *The departement description section*                                                     |
+| **vlan**             | Integer            | *The sub-network lan Identifier*                                                          |
+| **cisco**            | String             | *The Cisco Switch Identifier Name*                                                        |
+| **socket**           | Decimal String     | *The associated Gigabit Ethernet socket (with form **x/y/z**)*                            |
+| **Description**      | String             | *The associated outlet exact name (as it is written in a Cisco Switch)*                   |
+| **origin_name**      | String             | *The Origin User's avatar name*                                                           |
+| **connexion time**   | Float              | *If still connected, the connection time of the User, else the starting connection time*  |
+
 Finally written into the Origin_history file into the **origin.srv-prive.icgm.fr** server.
  
 ## Origin_Users.py
