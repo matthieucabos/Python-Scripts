@@ -4,6 +4,9 @@ import re
 import datetime as dt
 import time
 
+__author__="CABOS Matthieu"
+__date__=21/12/2021
+
 IPSwitchs={
 'Balard-1C-1': '10.14.0.47',
 'Balard-1D-1': '10.14.0.49',

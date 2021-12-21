@@ -10,8 +10,13 @@ day=`date | cut -d " " -f1`
 month=`date | cut -d " " -f2`
 num=`date | cut -d " " -f3`
 today="$day $month $num"
+# today="lun. déc. 20"
+# day="lun."
+# month="déc."
 cut_line=`cat logwatch | grep -n "$today" | head -1 | grep -Po "\K^[0-9]+"`
-Content=`cat logwatch | tail -$cut_line`
+nb_line=`wc -l logwatch | grep -Po "\K^[0-9]+"`
+read_line=`echo $(($nb_line-$cut_line))`
+Content=`cat logwatch | tail -$read_line`
 Slice=""
 Liste=""
 CutFlag=0
@@ -33,21 +38,19 @@ do
 		Slice=$Slice$line
 	fi
 done
+
 count=0
 Liste2=""
 for item in $Liste
 do
-	if [ $count -gt 2 ]
-	then
-		Liste2=$Liste2" "$item
-	fi
+	Liste2=$Liste2" "$item
 	count=$((count+1))
 done
 
 IP_Slice=""
 User=""
 ip=""
-count=0
+count=1
 declare -a IP_list
 
 for item in $Liste2
@@ -73,17 +76,24 @@ done
 
 User_IP=""
 tmp=""
+
+User=`echo ${IP_list[1]}| grep -Po "\K[A-Za-z0-9_-êïù]+@[A-Za-z0-9_-]+"`
+readarray t <<<"$(echo ${IP_list[1]} $tmp | tr ' ' '\n' | sort | uniq -u)"
+User_IP=$User":"${t[0]}
 for i in ${!IP_list[@]}
 do
 	if [[ -n "$tmp" ]]
 	then
 		readarray t <<<"$(echo ${IP_list[$i]} $tmp | tr ' ' '\n' | sort | uniq -u)"
 		User=`echo ${IP_list[$i]}| grep -Po "\K[A-Za-z0-9_-êïù]+@[A-Za-z0-9_-]+"`
-		if ! [[ $User_IP == *"$User"* ]]
+		if ! [[ $User_IP = *"$User"* ]]
 		then
 			User_IP=$User_IP" "$User":"${t[0]}
 		fi
 	fi
 	tmp=${IP_list[$i]}
 done
-echo $User_IP | grep -Po "\K[A-Za-z0-9_-êïù]+@[A-Za-z0-9_-]+\:([0-9]+\.){3}[0-9]+"
+for item in $User_IP
+do
+	echo $item
+done

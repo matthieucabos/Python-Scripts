@@ -5,6 +5,7 @@ import datetime as dt
 import time
 import netmiko
 from multiprocessing import Process
+import pyexcel as p
 
 __author__="CABOS Matthieu"
 __date__=21/12/2021
@@ -53,7 +54,7 @@ Vlans={
 
 # IP_list=sys.argv[1]
 
-Time_dict={}
+
 IP_list=[
 '10.14.23.214',
 '10.14.18.135'
@@ -112,8 +113,7 @@ def Get_Users_Info(IP_list):
 	Content=""
 	tmp=""
 	socket=""
-	count=0
-	
+	count=0	
 
 	# Regular Expressions Definition
 
@@ -122,7 +122,7 @@ def Get_Users_Info(IP_list):
 	regex_raw_ip=r'([0-9]+\.){3}[0-9]+'
 	regex_hostname=r'\"[A-Za-z0-9-_]+\"'
 	regex_cisco=r'Gi([0-9]+\/){2}[0-9]+'
-	regex_description=r'[NRJPASEP]+[0-9]+[A-K][0-9]+-[0-9]+'
+	regex_description=r'[NRJPASEP]+[0-9]+[A-K0-9]+-[0-9]+'
 
 	# Building DHCP Dictionnary
 
@@ -163,17 +163,14 @@ def Get_Users_Info(IP_list):
 	i=0
 	Process_List=[]
 	for cisco in list(IPSwitchs.keys()):
-		# //
-		# print(IPSwitchs[cisco])
-		# print(List_Dic[i])
 		i+=1
 		try:
 			# HERE !!!
 			Content=ssh_session(cisco,'sh mac address')
-
 		except:
 			print(cisco+' is not avaible at the moment')
 
+		User_liste=list(Users_dict.keys())
 		ContList=Content.split('\n')
 		for user in Users_dict.keys():
 			for line in ContList:
@@ -189,162 +186,20 @@ def Get_Users_Info(IP_list):
 		if count>=len(Users_dict.keys()):
 			break
 
-	Content=""
-	for k,v in Users_dict.items():
-		# //
+	file_name='../Switchs.ods'
+	records = p.get_array(file_name=file_name)
+	socket=""
+	for user in Users_dict.keys():
 		try:
-			# HERE !!!
-			home= os.getenv('HOME')
-			Content=ssh_session(v['cisco'],'sh int gigabitethernet '+v['socket'])
+			for record in records:
+				cisco=record[4]
+				socket=str(record[5])+"/0/"+str(record[8])
+				Description=record[2]
+				if Users_dict[user]['cisco']==cisco and Users_dict[user]['socket']==socket :
+					Users_dict[user]['Description']=Description		
 		except:
-			print('Informations missing about user'+str(v))
-
-		matches=re.finditer(regex_description, Content, re.MULTILINE)
-		for matchNum, match in enumerate(matches, start=1):
-			Users_dict[k]['Description']=match.group()
+			print(str(Users_dict[user]['hostname'])+" is not listed on the network")
 	return Users_dict
-
-def Cut_log():
-
-	# Cut logfile since the date (today as default)
-
-	try:
-		os.system('scp mcabos@origin.srv-prive.icgm.fr:~/logwatch .')
-	except:
-		pass
-
-	f=open('./logwatch','r')
-	date=os.popen('date').read()
-	Content=f.readlines()
-	Keep_flag=False
-	to_write=[]
-
-	for line in Content:
-		if(date[:13] in line) and not Keep_flag:
-			Keep_flag=True
-		if Keep_flag:
-			to_write.append(line)
-	f.close()
-	f=open('./logwatch','w')
-	for line in to_write:
-		f.write(line)
-	f.close()
-
-def time_to_timestamp(str_time):
-
-	# Get timestamp from the given string date
-
-	# Regular Expressions definition
-
-	regex_time=r'[0-9]+'
-	regex_month=r'[a-zéè]+'
-
-	# Variable definition
-
-	year=0
-	month=0
-	day=0
-	hour=0
-	minuts=0
-
-	# Getting integer fields since conversion
-
-	matches=re.finditer(regex_time,str_time,re.MULTILINE)
-	for matchNum, match in enumerate(matches, start=1):
-		if matchNum == 1:
-			day=int(match.group())
-		elif matchNum == 2 :
-			hour=int(match.group())
-		elif matchNum == 3 :
-			minuts=int(match.group())
-		elif matchNum == 5 :
-			year=int(match.group())
-	matches=re.finditer(regex_month, str_time, re.MULTILINE)
-	month=int(os.popen('date +%m').read())
-	date=dt.datetime(2021,month,day,hour,minuts)
-	timestamp=time.mktime(date.timetuple())
-
-	# Return the equivalent timestamp (in seconds since epoch)
-
-	return(timestamp)
-
-def Read_and_treat_log(path):
-
-	# Read and extract informations from the logwatch file
-
-	# Regular Expression Definition
-
-	regex_date=r'[a-z]+([^a-z]+.*[0-9]*\n)+'
-	regex_ip=r'([0-9]+\.)+[0-9]+'
-	regex_name=r'\"OriginPro\".*'
-	regex_pc=r'\@.*'
-	regex_time=r'^[a-z].*'
-
-	# Variables Definition
-
-	banned=['10.14.14.20']
-	name=""
-	ip_set=set()
-	find_ip_dict={}
-	name_ip_dict={}
-	time_dict={}
-	tmp_dict={}
-	diff={}
-	count=0
-	tmp={}
-
-	# Open and read the logwatch file
-
-	Cut_log()
-	f=open('./logwatch')
-	Content=f.read()
-	match_list=[]
-
-	# 1/ Getting IP list associated to a timed & named token. The resultys are stored by time order, arbitrary indexed from 1 -> n
-
-	matches=re.finditer(regex_date, Content, re.MULTILINE)
-	for matchNum, match in enumerate(matches, start=1):
-		match_list.append(match.group())
-	for item in match_list:
-		matches=re.finditer(regex_ip, item, re.MULTILINE)
-		for matchNum, match in enumerate(matches, start=1):
-			if not match.group() in banned:
-				ip_set.add(match.group())
-		matches=re.finditer(regex_name, item, re.MULTILINE)
-		for matchNum, match in enumerate(matches, start=1):
-			name=match.group()[12:]
-		tmp_dict[name]=ip_set.copy()
-		if name != "" and len(ip_set)!=0:
-			find_ip_dict[str(count)]=tmp_dict.copy()
-			matches=re.finditer(regex_time, item, re.MULTILINE)
-			for matchNum, match in enumerate(matches,start=1):
-				time_dict[str(count)]=time_to_timestamp(match.group())
-		tmp_dict.clear()
-		ip_set.clear()
-		name=""
-		count+=1
-
-	# 2/ Getting host ID from the full Origin user name (with form name@host) => Allow multiple users sessions on the same host
-
-	TEMP='@'
-	for k,v in find_ip_dict.items():
-		if list(find_ip_dict[k].keys())[0] != TEMP:
-			Time_dict[list(find_ip_dict[k].keys())[0]]=time_dict[k]
-		TEMP=list(find_ip_dict[k].keys())[0]
-		matches=re.finditer(regex_pc, list(v.keys())[0], re.MULTILINE)
-		for matchNum, match in enumerate(matches, start=1):
-			host=match.group()
-		if len(name_ip_dict)==0:
-			name_ip_dict[host]=list(v.values())[0].pop()
-		else:
-
-			# 3/ Compute the Cantor difference between two adjacents set (indexed +- 1) to get the User's associated IP
-
-			diff=(list(v.values())[0])-tmp
-			if len(diff)!=0:
-				name_ip_dict[host]=diff.pop()
-		tmp=list(v.values())[0].copy()
-	return name_ip_dict
 
 def Write_in_file(to_write,path):
 
@@ -376,30 +231,125 @@ def get_Connected():
 			break
 	return(Connected)
 
+def Get_Ip_list2():
+	res={}
+	regex_user=r'.*\:'
+	regex_ip=r'([0-9]+\.){3}[0-9]+'
+	user=""
+	ip=""
+
+	Content=os.popen("./Treat_log_v2.sh").readlines()
+	for line in Content:
+		matches=re.finditer(regex_user, line, re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			user=match.group()
+		matches=re.finditer(regex_ip, line, re.MULTILINE)
+		for matchNum, match in enumerate(matches, start=1):
+			ip=match.group()
+		res[ip]=user[:-1]
+	return res
+
+def time_to_timestamp(str_time):
+
+	# Get timestamp from the given string date
+
+	# Regular Expressions definition
+
+	regex_time=r'[0-9]+'
+	regex_month=r'[a-zéè]+'
+
+	# Variable definition
+
+	year=0
+	month=0
+	day=0
+	hour=int(str_time[0:2])
+	minuts=int(str_time[3:5])
+
+	# Getting integer fields since conversion
+
+	day=int(os.popen('date +%d').read())
+	month=int(os.popen('date +%m').read())
+	year=int(os.popen('date +%Y').read())
+	date=dt.datetime(year,month,day,hour,minuts)
+	timestamp=time.mktime(date.timetuple())
+
+	# Return the equivalent timestamp (in seconds since epoch)
+
+	return(timestamp)
+
+def Get_time(Ip_list):
+
+	# Building Time dictionnary associating a pseudo to a start time
+
+	# Variable Definitions
+
+	Time_dict={}
+	Done=['(@orglab-SLOG@']
+	time=""
+	Start_flag=False
+	date=os.popen('date').read()
+
+	# Regular Expressions definition
+
+	regex_time=r'([0-9]+\:){2}[0-9]+'
+	regex_name=r'[^\s]*\@[A-Za-z-0-9_-]*'
+
+	f=open("logwatch",'r')
+	Records=f.readlines()
+	for record in Records:
+		if date[:13] in record :
+			Start_flag=True
+		if Start_flag :
+			matches=re.finditer(regex_time, record, re.MULTILINE)
+			for matchNum, match in enumerate(matches, start=1):
+				if match.group() != "":
+					time=match.group()
+			matches=re.finditer(regex_name, record, re.MULTILINE)
+			for matchNum, match in enumerate(matches, start=1):
+				if match.group() != "" and not (match.group() in Done):
+					Time_dict[match.group()]=time_to_timestamp(time) 
+					time=""
+					Done.append(match.group())
+	return Time_dict
+
+def get_host(origin_name):
+	host=""
+	regex_host=r'@.*'
+	matches=re.finditer(regex_host, origin_name, re.MULTILINE)
+	for matchNum, match in enumerate(matches, start=1):
+		return match.group()
+
 # Main Users Informations Finder Algorithm
 
-name_ip_dict={}
-name_ip_dict=Read_and_treat_log('./logwatch')
-IP_list=list(name_ip_dict.values())
-Users_dict=Get_Users_Info(IP_list)
+host=""
+
+# Building and associating Dictionnaries
+
+IP_list=Get_Ip_list2()
+Time_dict=Get_time(IP_list)
+Users_dict=Get_Users_Info(list(IP_list.keys()))
 Connected=get_Connected()
 
 for k,v in Users_dict.items():
-	if v['ip'] in list(name_ip_dict.values()):
-		position=list(name_ip_dict.values()).index(v['ip'])
-		Users_dict[k]['origin_name']=list(name_ip_dict.keys())[position]
+	if v['ip'] in list(IP_list.keys()):
+		position=list(IP_list.keys()).index(v['ip'])
+		Users_dict[k]['origin_name']=list(IP_list.values())[position]
+		host=get_host(Users_dict[k]['origin_name'])
+	
 	for l,m in Time_dict.items():
-		try:		
-			if (v['origin_name'][1:] in l) and (v['origin_name'][1:].strip() in Connected):
-				Users_dict[k]['connexion time']=str(float(time.time())-m)
-				break
-			else:
-				Users_dict[k]['connexion time']='not avaible, start at '+str(m)
-		except:
-			print('Error occured, user is not present into log archive.')
+		if l==v['origin_name'] and (host[1:] in Connected):
+			Users_dict[k]['connexion time']=str((float(time.time())-m)/60)+" min"
 			break
+		elif l==v['origin_name'] :
+			Users_dict[k]['connexion time']='Connection closed, started at '+str(os.popen('date -d @'+str(m)).read()[:22])
+			break
+		else:
+			pass
 	print(k)
 	print(v)
+
+# Writing History File
 
 user=os.getenv('USER')
 try:
