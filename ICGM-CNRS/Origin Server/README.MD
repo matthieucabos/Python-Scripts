@@ -16,7 +16,7 @@ wich are the Licence File and the Tokens Log file.
 
 These scripts need a ssh session access into the origin server (with form origin.domain.fr)
 
-Two main scripts have been written to automate the DHCP Informations retrievment : 
+These main scripts have been written to automate the DHCP Informations retrievment and Origin Server essentials informations : 
 
 [1/ Get_User_Info_From_IP_v3.py](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/Origin%20Server#get_user_info_from_ip_v3py)
 
