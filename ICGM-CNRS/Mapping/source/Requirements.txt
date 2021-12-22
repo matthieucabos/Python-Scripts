@@ -1,5 +1,0 @@
-sphinx>2.0
-numpydoc
-sphinx-autoapi
-sphinx-automodapi
-sphinx-rtd-theme
