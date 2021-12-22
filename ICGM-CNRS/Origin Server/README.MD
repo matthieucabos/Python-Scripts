@@ -141,7 +141,7 @@ This script is ruled by the following algorithm :
 * **Associate to each User Token Event an Ip list** containing all the Inforamtions since the ss -n -t command
 * **For each User, stored in time, Computing the Cantor Difference between the two Ip Sets.** The result is the associated IP of the current User. In fact the first IP is immediatly avaible and permit to find the others from the principle of deduction.
 
-The result is shown as a user:ip list and is used in the Get_User_Info_From_IP_v3.py to make it faster.
+The result is shown as a user:ip list and is used in the **Get_User_Info_From_IP_v3.py** to make it faster.
 
 Please to use with the correct syntax :
 
