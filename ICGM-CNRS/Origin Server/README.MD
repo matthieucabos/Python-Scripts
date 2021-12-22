@@ -14,17 +14,21 @@ These Scripts have been written to manage properly an Origin Server (See [*Origi
 It is adapted to the Origin ssh platform (reading and treating **opt/Linux_FLEXnet_Server_ver_11.16.5.1/Licenses** and **/usr/local/flexlm/orglabdebug.log**
 wich are the Licence File and the Tokens Log file.
 
-Two main scripts have been written to automate the DHCP Informations retrievmen : 
+Two main scripts have been written to automate the DHCP Informations retrievment : 
 
 [1/ Get_User_Info_From_IP_v3.py](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/Origin%20Server#get_user_info_from_ip_v3py)
 
 [2/ Origin_Users.py](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/Origin%20Server#origin_userspy)
+
+[3/ Get_Connexion_Time.py]()
 
 ___________________________________________________________________________________________________
 
 ## Get_User_Info_From_IP_v3.py
 
 This script is the optimised version of the Origin_Users.py script.
+
+It uses the **Treat_log_v2.sh** file to get an immediate association between user ID and their IP.
 
 Since the two first versions, the optimised version is ruled differently from the first one :
 * **Cut logfile** since the date (today as default)
@@ -183,6 +187,67 @@ Where Ordinateurs.ods is the DHCP authorisation list table with form :
 ```bash
 <Hostname> | <MAC_@> | <Vlan> | <Relative Informations>
 ```
+
+## Get_Connexion_Time.py
+
+This script allow to get the daily Connexion Time Dictionnary sorted by User.
+
+It use the associated **Treat_tokens.sh** to get immediate shell values from the logfile.
+
+The algorithm is ruled by the following steps :
+* **Building Timestamp Dictionnary** to compute the connection time
+* **Reading the results of the Treat_tokens.sh script**
+* **Sort and Store** them into lists
+* **Initialising Dictionnaries**
+* **Populate Dictionnaries**
+* **Computing the connection time** since the first OUT token and the last IN token
+
+The last Data Structure is a dictionnary, linkable with the rest of the informations.
+
+Please to use with the correct syntax :
+
+```bash
+python3 Get_Connexion_Time.py
+```
+
+## Treat_tokens.sh
+
+### Principe
+
+The Treat_tokens.sh script has been writtent to automate the Tokens Management into an Origin Server :
+
+* *Each User take an **OUT** token to start a working session.*
+* *Each OUT token will be followed by an IN token, the last emitted IN token sign the closure of the connection*
+* *Each Token is associated to a name and a time*
+
+You have to Dress a *"Token map"* of the already distributed tokens.
+To do so, see the followings methods :
+
+* **Get the immediate Content of the daily logwatch file** *(generated with the same nohup script auto sheduled than the first Script)*
+* **Get the raw Token list** associating User ID and the time field
+* **Sorting tokens** by Type (IN or OUT)
+* **Associate to each token an User ID** or Hostname (filtered by regular expressions)
+* **Associate to each token the correct Timestamp**
+* **Treat the input** entries as a switch
+
+### Usage
+
+Please to use with the correct syntax :
+
+```bash
+./Treat_tokens.sh <mode>
+```
+
+where mode balance between :
+
+* **1** : *Get the IN tokens*
+* **2** : *Get the OUT tokens*
+* **3** : *Get the IN Tokens Hostname*
+* **4** : *Get the OUT Toekns Hostname*
+* **5** : *Get the IN Tokens Timestamp Sorted List*
+* **6** : *Get the OUT Tokens Timestamp Sorted List*
+
+
 
 ## Support
 
