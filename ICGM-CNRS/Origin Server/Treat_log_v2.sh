@@ -3,16 +3,13 @@
 # Author : CABOS Matthieu
 # Date : 15/12/2021
 
+# Cut and read Logwatch file since the date fiels (must be a daily Slice)
+
 scp mcabos@origin.srv-prive.icgm.fr:~/logwatch .
 day=`date | cut -d " " -f1`
-# echo $day
-# day="mar."
 month=`date | cut -d " " -f2`
 num=`date | cut -d " " -f3`
 today="$day $month $num"
-# today="lun. déc. 20"
-# day="lun."
-# month="déc."
 cut_line=`cat logwatch | grep -n "$today" | head -1 | grep -Po "\K^[0-9]+"`
 nb_line=`wc -l logwatch | grep -Po "\K^[0-9]+"`
 read_line=`echo $(($nb_line-$cut_line))`
@@ -20,6 +17,8 @@ Content=`cat logwatch | tail -$read_line`
 Slice=""
 Liste=""
 CutFlag=0
+
+# Reading filtered content to get the correct Informations
 
 for line in $Content
 do
@@ -47,11 +46,15 @@ do
 	count=$((count+1))
 done
 
+# Filtering Ip and User fields from Regular Expressions
+
 IP_Slice=""
 User=""
 ip=""
 count=1
 declare -a IP_list
+
+# Associate to each User Token Event an Ip list containing all the Inforamtions since the ss -n -t command
 
 for item in $Liste2
 do
@@ -76,6 +79,8 @@ done
 
 User_IP=""
 tmp=""
+
+# For each User, stored in time, Computing the Cantor Difference between the two Ip Sets. The result is the associated IP of the current User. In fact the first IP is immediatly avaible and permit to find the others from the principle of deduction.
 
 User=`echo ${IP_list[1]}| grep -Po "\K[A-Za-z0-9_-êïù]+@[A-Za-z0-9_-]+"`
 readarray t <<<"$(echo ${IP_list[1]} $tmp | tr ' ' '\n' | sort | uniq -u)"
