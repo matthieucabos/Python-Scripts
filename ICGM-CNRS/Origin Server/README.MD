@@ -18,7 +18,7 @@ Two main scripts have been written to automate the DHCP Informations retrievmen 
 
 [1/ Get_User_Info_From_IP_v3.py](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/Origin%20Server#get_user_info_from_ip_v3py)
 
-[2/ Origin_Users.py](https://github.com/matthieucabos/Python-Scripts/blob/master/ICGM-CNRS/Origin%20Server/README.MD#origin_userspy)
+[2/ Origin_Users.py](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/Origin%20Server#origin_userspy)
 
 ___________________________________________________________________________________________________
 
