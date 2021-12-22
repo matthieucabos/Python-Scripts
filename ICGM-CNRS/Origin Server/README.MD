@@ -20,7 +20,7 @@ Two main scripts have been written to automate the DHCP Informations retrievment
 
 [1/ Get_User_Info_From_IP_v3.py](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/Origin%20Server#get_user_info_from_ip_v3py)
 
-[2/ Treat_log_v2.sh]()
+[2/ Treat_log_v2.sh](https://github.com/matthieucabos/Python-Scripts/blob/master/ICGM-CNRS/Origin%20Server/README.MD#treat_log_v2sh)
 
 [3/ Origin_Users.py](https://github.com/matthieucabos/Python-Scripts/tree/master/ICGM-CNRS/Origin%20Server#origin_userspy)
 
@@ -111,6 +111,43 @@ With :
 | **connexion time**   | Float              | *If still connected, the connection time of the User, else the starting connection time*  |
 
 Finally written into the Origin_history file into the **origin.srv-prive.icgm.fr** server.
+
+
+## Treat_log_v2.sh
+
+This script has been writtent to treat immediatly the logwatch file and associate to each User ID the correct Ip address.
+To make it work, you have to write the logwatch file since the micro shell script and launcher from Get_User_Info_From_IP_v3.py
+(The orglabdebug.log file manager associating a date time to an event on the orglabdebug logfile)
+
+It is ruled by automatic script : 
+
+```bash
+date >> ./logwatch
+ss -n -t | grep 60213 >> ./logwatch
+tail -n 1 /usr/local/flexlm/orglabdebug.log >> ./logwatch
+```
+This script is lauched periodically with commands :
+
+```bash
+inotifywait -q -m -e modify /usr/local/flexlm/orglabdebug.log|
+while read -r filename event; do
+ ./Script.sh       
+done
+```
+This script is ruled by the following algorithm :
+* **Cut and read Logwatch file** since the date fields (must be a daily Slice)
+* **Reading filtered content** to get the correct Informations
+* **Filtering Ip and User** fields from Regular Expressions
+* **Associate to each User Token Event an Ip list** containing all the Inforamtions since the ss -n -t command
+* **For each User, stored in time, Computing the Cantor Difference between the two Ip Sets.** The result is the associated IP of the current User. In fact the first IP is immediatly avaible and permit to find the others from the principle of deduction.
+
+The result is shown as a user:ip list and is used in the Get_User_Info_From_IP_v3.py to make it faster.
+
+Please to use with the correct syntax :
+
+```bash
+./Treat_log_v2.sh
+``` 
  
 ## Origin_Users.py
 
@@ -192,42 +229,6 @@ Where Ordinateurs.ods is the DHCP authorisation list table with form :
 
 ```bash
 <Hostname> | <MAC_@> | <Vlan> | <Relative Informations>
-```
-
-## Treat_log_v2.sh
-
-This script has been writtent to treat immediatly the logwatch file and associate to each User ID the correct Ip address.
-To make it work, you have to write the logwatch file since the micro shell script and launcher from Get_User_Info_From_IP_v3.py
-(The orglabdebug.log file manager associating a date time to an event on the orglabdebug logfile)
-
-It is ruled by automatic script : 
-
-```bash
-date >> ./logwatch
-ss -n -t | grep 60213 >> ./logwatch
-tail -n 1 /usr/local/flexlm/orglabdebug.log >> ./logwatch
-```
-This script is lauched periodically with commands :
-
-```bash
-inotifywait -q -m -e modify /usr/local/flexlm/orglabdebug.log|
-while read -r filename event; do
- ./Script.sh       
-done
-```
-This script is ruled by the following algorithm :
-* **Cut and read Logwatch file** since the date fields (must be a daily Slice)
-* **Reading filtered content** to get the correct Informations
-* **Filtering Ip and User** fields from Regular Expressions
-* **Associate to each User Token Event an Ip list** containing all the Inforamtions since the ss -n -t command
-* **For each User, stored in time, Computing the Cantor Difference between the two Ip Sets.** The result is the associated IP of the current User. In fact the first IP is immediatly avaible and permit to find the others from the principle of deduction.
-
-The result is shown as a user:ip list and is used in the Get_User_Info_From_IP_v3.py to make it faster.
-
-Please to use with the correct syntax :
-
-```bash
-./Treat_log_v2.sh
 ```
 
 ## Get_Connexion_Time.py
